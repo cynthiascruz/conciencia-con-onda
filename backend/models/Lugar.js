@@ -6,8 +6,8 @@ const lugarSchema = new mongoose.Schema({
         required: true
     },
     categoria:{
-      type: String,
-      enum: ['museo', 'parque', 'restaurante', 'cafeteria', 'estadio', 'centro comercial', 'hotel'],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Categoria',
       required: true  
     },
     direccion: {
