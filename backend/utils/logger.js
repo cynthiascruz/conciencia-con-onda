@@ -1,12 +1,12 @@
 // Este archivo se encarga de configurar el logger utilizando Winston para registrar eventos y errores en la aplicación.
 
-import winston, { level } from 'winston';
-import log from '..models/Log.js';
+import winston from 'winston';
+import Log from '../models/Log.js';
 
 class MongoTransport extends winston.Transport {
     async log(info, callback) {
         try {
-            await log.create({
+            await Log.create({
                 level: info.level,
                 message: info.message,
                 method: info.method || null,
