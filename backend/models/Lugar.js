@@ -16,7 +16,6 @@ const lugarSchema = new mongoose.Schema({
     },
     horario: {
         type: String,
-        required: optional,
     },
     descripcion: {
         type: String,
@@ -24,11 +23,9 @@ const lugarSchema = new mongoose.Schema({
     },
     url_img: {
         type: String,
-        required: optional,
     },
     url_sitioweb: {
         type: String,
-        required: optional,
     },
     caracteristicas_accesibilidad: [{
     type: String,
