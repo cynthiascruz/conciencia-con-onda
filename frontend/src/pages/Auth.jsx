@@ -18,36 +18,93 @@ const Field = ({ label, children, right }) => (
 const inputBase = "flex items-center gap-3 bg-white border-2 border-slate-200 rounded-xl px-4 py-3 focus-within:border-[#1c16cd] transition-colors"
 const inputText = "flex-1 outline-none text-sm text-slate-800 placeholder:text-slate-300 bg-transparent"
 
-const ADMIN_EMAIL = "admin@concienciacononda.com"
+// const ADMIN_EMAIL = "admin@concienciacononda.com"
+
+//Toast para notificar login exitoso o error
+
+const Toast = ({ mensaje, tipo }) => {
+  const esError = tipo === 'error'
+  return (
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-lg text-sm font-semibold animate-[tabFade_0.2s_ease]
+      ${esError ? 'bg-[#d32f2f] text-white' : 'bg-[#13da28] text-[#063d0c]'}`}>
+      <span className="material-symbols-rounded" style={{ fontSize: '18px' }}>
+        {esError ? 'error' : 'check_circle'}
+      </span>
+      {mensaje}
+    </div>
+  )
+}
 
 const Auth = ({ mode: initialMode = "login" }) => {
   const navigate = useNavigate()
-  const [mode, setMode]                 = useState(initialMode)
+  const [mode, setMode] = useState(initialMode)
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail]               = useState("")
+  const [email, setEmail] = useState("")
+  const [nombre, setNombre] = useState("")
+  const [apellido, setApellido] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState(null)
 
   const isLogin = mode === "login"
+
+  const mostrarToast = (mensaje, tipo = "success") => {
+    setToast({ mensaje, tipo })
+    setTimeout(() => setToast(null), 3000)
+  }
 
   const switchMode = (next) => {
     setMode(next)
     setShowPassword(false)
+    setNombre("")
+    setApellido("")
+    setEmail("")
+    setPassword("")
     navigate(next === "login" ? "/login" : "/registro", { replace: true })
   }
 
-  const handleSubmit = () => {
-    const emailLower = email.trim().toLowerCase()
-    if (isLogin) {
-      localStorage.setItem("sesionUsuario", emailLower)
-    }
-    if (isLogin && emailLower === ADMIN_EMAIL) {
-      navigate("/admin")
-    } else {
-      navigate("/")
+
+  //Maneja el submit del formulario, enviando los datos al backend y mostrando un toast con el resultado
+  const handleSubmit = async () => {
+    setLoading(true)
+    try {
+      if (isLogin) {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password }),
+        })
+        const data = await res.json()
+        if (!res.ok) return mostrarToast(data.mensaje, 'error')
+        mostrarToast(`Bienvenido, ${data.usuario.nombre} 👋`)
+        localStorage.setItem('usuario', JSON.stringify(data.usuario))
+        setTimeout(() => {
+          data.usuario.rol === 'Admin' ? navigate('/admin') : navigate('/')
+        }, 1000)
+      } else {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/registro`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, apellido, email, password }),
+        })
+        const data = await res.json()
+        if (!res.ok) return mostrarToast(data.mensaje, 'error')
+        mostrarToast('Cuenta creada correctamente. Inicia sesión 🎉')
+        setTimeout(() => switchMode('login'), 1500)
+      }
+    } catch (error) {
+      mostrarToast('No se pudo conectar con el servidor.', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
+
+      {/* Toast */}
+      {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} />}
 
       {/* Formulario */}
       <div className="flex flex-col justify-center items-center px-6 py-12 bg-[#f8f8f8] order-2 lg:order-1">
@@ -61,8 +118,8 @@ const Auth = ({ mode: initialMode = "login" }) => {
           {/* Tabs */}
           <div className="flex mb-8 border-b-2 border-slate-200">
             {[
-              { key: "login",    label: "Iniciar sesión", icon: "login"      },
-              { key: "registro", label: "Crear cuenta",   icon: "person_add" },
+              { key: "login", label: "Iniciar sesión", icon: "login" },
+              { key: "registro", label: "Crear cuenta", icon: "person_add" },
             ].map(({ key, label, icon }) => (
               <button
                 key={key}
@@ -82,77 +139,82 @@ const Auth = ({ mode: initialMode = "login" }) => {
           {/* Contenido animado */}
           <div key={mode} className="animate-[tabFade_0.2s_ease]">
 
-          {/* Heading */}
-          <h1 className="font-extrabold text-3xl text-[#171717] mb-2 leading-tight">
-            {isLogin ? "Bienvenido de vuelta" : "Crea tu cuenta"}
-          </h1>
-          <p className="text-slate-500 text-sm mb-6 leading-relaxed">
-            {isLogin
-              ? "Inicia sesión para explorar lugares accesibles en Nuevo León"
-              : "Es gratis y solo toma un minuto. Únete a la comunidad accesible"
-            }
-          </p>
+            {/* Heading */}
+            <h1 className="font-extrabold text-3xl text-[#171717] mb-2 leading-tight">
+              {isLogin ? "Bienvenido de vuelta" : "Crea tu cuenta"}
+            </h1>
+            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+              {isLogin
+                ? "Inicia sesión para explorar lugares accesibles en Nuevo León"
+                : "Es gratis y solo toma un minuto. Únete a la comunidad accesible"
+              }
+            </p>
 
-          {/* Formulario */}
-          <div className="flex flex-col gap-4 min-h-105">
+            {/* Formulario */}
+            <div className="flex flex-col gap-4 min-h-105">
 
-            {/* Nombre y Apellido — solo registro */}
-            {!isLogin && (
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Nombre">
-                  <div className={inputBase}>
-                    <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>person</span>
-                    <input type="text" placeholder="Tu nombre" className={inputText} />
-                  </div>
-                </Field>
-                <Field label="Apellido">
-                  <div className={inputBase}>
-                    <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>person</span>
-                    <input type="text" placeholder="Tu apellido" className={inputText} />
-                  </div>
-                </Field>
-              </div>
-            )}
+              {/* Nombre y Apellido — solo registro */}
+              {!isLogin && (
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Nombre">
+                    <div className={inputBase}>
+                      <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>person</span>
+                      <input type="text" placeholder="Tu nombre" className={inputText}
+                        value={nombre} onChange={e => setNombre(e.target.value)} />
+                    </div>
+                  </Field>
+                  <Field label="Apellido">
+                    <div className={inputBase}>
+                      <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>person</span>
+                      <input type="text" placeholder="Tu apellido" className={inputText}
+                        value={apellido} onChange={e => setApellido(e.target.value)} />
+                    </div>
+                  </Field>
+                </div>
+              )}
 
-            {/* Email */}
-            <Field label="Correo electrónico">
-              <div className={inputBase}>
-                <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>mail</span>
-                <input type="email" placeholder="tu@email.com" className={inputText} value={email} onChange={e => setEmail(e.target.value)} />
-              </div>
-            </Field>
+              {/* Email */}
+              <Field label="Correo electrónico">
+                <div className={inputBase}>
+                  <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>mail</span>
+                  <input type="email" placeholder="tu@email.com" className={inputText} value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+              </Field>
 
-            {/* Contraseña */}
-            <Field label="Contraseña">
-              <div className={inputBase}>
-                <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>lock</span>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder={isLogin ? "Contraseña" : "Crea una contraseña segura"}
-                  className={inputText}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </Field>
+              {/* Contraseña */}
+              <Field label="Contraseña">
+                <div className={inputBase}>
+                  <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>lock</span>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder={isLogin ? "Contraseña" : "Crea una contraseña segura"}
+                    className={inputText}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </Field>
 
-            {/* Botón */}
-            <button
-              onClick={handleSubmit}
-              className="w-full flex items-center justify-center gap-2 bg-[#1c16cd]/90 hover:bg-[#1510a0] text-white font-bold py-4 rounded-xl text-sm tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 mt-1"
-            >
-              <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>
-                {isLogin ? "login" : "person_add"}
-              </span>
-              {isLogin ? "Iniciar sesión" : "Crear cuenta"}
-            </button>
+              {/* Botón */}
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-[#1c16cd]/90 hover:bg-[#1510a0] text-white font-bold py-4 rounded-xl text-sm tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 mt-1"
+              >
+                <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>
+                  {loading ? "progress_activity" : isLogin ? "login" : "person_add"}
+                </span>
+                {loading ? "Cargando..." : isLogin ? "Iniciar sesión" : "Crear cuenta"}
+              </button>
 
-          </div>
+            </div>
           </div>
         </div>
       </div>
