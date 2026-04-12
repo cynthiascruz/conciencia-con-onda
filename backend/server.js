@@ -6,6 +6,7 @@ import connectDB from './config/db.js';
 import { connect } from 'mongoose';
 import authRoutes from './routes/auth.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
+import usuarioRoutes from './routes/usuario.routes.js';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(cookieParser())
 
 // Rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/usuarios', usuarioRoutes);
 
 
 
