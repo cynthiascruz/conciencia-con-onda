@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import usuarioRoutes from './routes/usuario.routes.js';
 import categoriaRoutes from './routes/categoria.routes.js';
+import lugarRoutes from './routes/lugar.routes.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/categorias', categoriaRoutes);
+app.use('/api/lugares', lugarRoutes);
 
 
 
