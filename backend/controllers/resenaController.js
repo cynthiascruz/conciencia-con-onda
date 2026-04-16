@@ -16,12 +16,11 @@ const moderarConIA = async (texto) => {
             `https://api-inference.huggingface.co/models/unitary/multilingual-toxic-xlm-roberta`,
             {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    comment: {text: texto},
-                    languages: ['es'],
-                    requestedAttributes: {TOXICITY: {}},
-                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`
+                },
+                body: JSON.stringify({inputs: texto}),
             }
         );
 
@@ -34,16 +33,28 @@ const moderarConIA = async (texto) => {
         }
 
         const data = await response.json();
-        const score = data.attributeScores.TOXICITY.summaryScore.value;
 
-        logger.info('Score de moderación ${ score.toFixed(2) }');
+        // La API devuelve un [[{ label, score }, ...]] — extraemos el score de 'toxic'
+        const resultados = data[0];
+        const toxic = resultados.find(r => r.label === 'toxic');
 
-        if (score >= 0.85) return 'Eliminada';
-        if (score >= 0.60) return 'Pendiente';
+        if (!toxic) {
+            // Si no se encuentra la etiqueta 'toxic', asumimos que no es tóxico
+            logger.warn('Etiqueta "toxic" no encontrada en la respuesta de la API, reseña marcada como Publicada',{
+                payload: JSON.stringify(resultados),    
+            });
+            return 'Publicada';
+        }
+
+        const score = toxic.score;
+        logger.info (`Resultados de moderación: ${score.toFixed(2)}`);
+
+        // Validación Eliminda/Pendiente
+        if(score >= .85) return 'Eliminada';
+        if (score >= .60) return 'Pendiente';
         return 'Publicada';
-    } catch (error) {
-        logger.error('Error al moderar con IA', {error: error.message});
-        return 'Pendiente'; // En caso de error, dejamos la reseña como 'Pendiente'
+    } catch (error){
+        logger.warn (`Error inesperado ${error.message}. Estatus de reseña: Pendiente.`);
+        return 'Pendiente';
     }
 };
-
