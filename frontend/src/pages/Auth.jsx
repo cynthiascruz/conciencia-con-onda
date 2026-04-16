@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import logo from "../assets/logotipo.svg"
 import imgbg from "../assets/imgbg.jpg"
+import { useAuth } from "../context/AuthContext"
 
 /* Input */
 const Field = ({ label, children, right }) => (
@@ -36,7 +37,8 @@ const Toast = ({ mensaje, tipo }) => {
 }
 
 const Auth = ({ mode: initialMode = "login" }) => {
-  const navigate = useNavigate()
+  const navigate    = useNavigate()
+  const { login }   = useAuth()
   const [mode, setMode] = useState(initialMode)
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
@@ -78,7 +80,7 @@ const Auth = ({ mode: initialMode = "login" }) => {
         const data = await res.json()
         if (!res.ok) return mostrarToast(data.mensaje, 'error')
         mostrarToast(`Bienvenido, ${data.usuario.nombre} 👋`)
-        localStorage.setItem('usuario', JSON.stringify(data.usuario))
+        login(data.usuario)
         setTimeout(() => {
           data.usuario.rol === 'Admin' ? navigate('/admin') : navigate('/')
         }, 1000)

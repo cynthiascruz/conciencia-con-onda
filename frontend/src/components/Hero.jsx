@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 const quickTags = [
   { label: "Restaurantes", color: "bg-[#ff8c2a] hover:bg-[#e07820]" },
@@ -9,6 +10,12 @@ const quickTags = [
 
 const Hero = () => {
   const [query, setQuery] = useState("")
+  const navigate = useNavigate()
+
+  const buscar = (texto) => {
+    const q = texto.trim()
+    navigate(q ? `/lugares?q=${encodeURIComponent(q)}` : "/lugares")
+  }
 
   return (
     <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
@@ -54,7 +61,14 @@ const Hero = () => {
           <div className="flex items-center bg-white rounded-2xl overflow-hidden shadow-2xl border-[3px] border-white focus-within:border-[#faea1f] transition-all duration-300">
             <div className="flex items-center flex-1 px-4 gap-4">
               <span className="material-icons-round text-[#1c16cd]">search</span>
-              <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Busca restaurantes, museos, parques..." className="w-full py-4 text-slate-800 placeholder:text-slate-400 outline-none bg-transparent font-medium"/>
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && buscar(query)}
+                placeholder="Busca restaurantes, museos, parques..."
+                className="w-full py-4 text-slate-800 placeholder:text-slate-400 outline-none bg-transparent font-medium"
+              />
             </div>
           </div>
         </div>
@@ -67,7 +81,7 @@ const Hero = () => {
           {quickTags.map(tag => (
             <button
               key={tag.label}
-              onClick={() => setQuery(tag.label)}
+              onClick={() => buscar(tag.label)}
               className={`${tag.color} text-white text-xs font-bold px-5 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg`}
             >
               {tag.label}

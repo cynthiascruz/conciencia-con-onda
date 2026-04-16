@@ -1,11 +1,14 @@
 import { useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { lugares, reseñas as reseñasIniciales } from "../data/lugares"
 import PlaceCard from "../components/Placecard"
 import Sidebar from "../components/Sidebar"
 import PlaceModal from "../components/Placemodal"
 import AddLugarModal from "../components/AddLugarModal"
+import { useAuth } from "../context/AuthContext"
 
 const Lugares = () => {
+  const { usuario } = useAuth()
   const [query, setQuery] = useState("")
   const [lugarSeleccionado, setLugarSeleccionado] = useState(null)
   const [mostrarAddModal, setMostrarAddModal] = useState(false)
@@ -16,7 +19,7 @@ const Lugares = () => {
     soloVerificados: false,
   })
 
-  const sesionActiva = !!localStorage.getItem("sesionUsuario")
+  const sesionActiva = !!usuario
 
   // Lógica de filtrado
   const lugaresFiltrados = lugares.filter(lugar => {
