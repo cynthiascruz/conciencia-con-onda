@@ -22,7 +22,7 @@ const resenaSchema = new mongoose.Schema({
     },
     estado: {
         type: String,
-        enum: ['Publicada', 'Eliminada'],
+        enum: ['Publicada', 'Eliminada', 'Pendiente'],
         default: 'Publicada',
     },
     fecha_Resena: {
