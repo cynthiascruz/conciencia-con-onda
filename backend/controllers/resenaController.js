@@ -58,3 +58,55 @@ const moderarConIA = async (texto) => {
         return 'Pendiente';
     }
 };
+
+/*
+    Listar reseñas de un lugar
+    Método: GET
+    Ruta: /api/resenas/:lugarId
+    Acceso: Público
+    Orden: Reciente a antiguo
+*/
+export const listarResenas = async (req, res,next) => {
+    try{
+        const resenas = await Resena.find({
+            id_lugar: req.params.lugarId,
+            estado: 'Publicada'
+        })
+            .populate('id_autor', 'nombre apellido')
+            .sort({fecha_Resena: -1});
+
+        logger.info(`Reseñas listadas para lugar: ${req.params.lugarId}`,{
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
+
+        return res.status(200).json(resenas);
+
+    } catch (error){
+        next(error);
+    }
+};
+
+/*
+    Listar reseñas (publicadas y pendientes)
+    Método: GET
+    Ruta: /api/resenas/:ligarId/admin
+    Acceso: Admin
+*/
+
+export const listarResenasAdmin = async (req, res,next) => {
+    try {
+        const resenas = await Resena.find({
+            id_lugar: req.params.lugarId,
+            estado: { $in: ['Publicada', 'Pendiente'] },
+        })
+            .populate('id_autor', 'nombre apellido email')
+            .sort({ fecha_Resena: -1 });
+
+            logger.info(`Reseñas listadas para admin del lugar: ${req.params.lugarId}`,{
+                method: req.method, url: req.originalUrl, statusCode: 200,
+            });
+        return res.status(200).json(resenas);
+    } catch (error) {
+        next(error);
+    }
+};
