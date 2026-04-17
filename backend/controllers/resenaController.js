@@ -110,3 +110,56 @@ export const listarResenasAdmin = async (req, res,next) => {
         next(error);
     }
 };
+
+/*
+    Crear reseña
+    Método: POST
+    Ruta: /api/resenas
+    Acceso: Usuario autenticado
+*/
+export const crearResena = async (req, res,next) => {
+    try {
+        const { id_lugar, tipo, descripcion } = req.body;
+
+        // Validar campos obligatorios
+        if (!id_lugar || !tipo || !descripcion) {
+            return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });
+        }
+
+        // Validación si el lugar existe
+        const lugar = await Lugar.findById(id_lugar);
+        if (!lugar) {
+            return res.status(404).json({ mensaje: 'Lugar no encontrado' });
+        }
+
+        // Validar el estado de la reseña con IA
+        const estado = await moderarConIA(descripcion);
+        // Crear la reseña
+        const Resena = await Resena.create({
+            id_lugar,
+            id_autor: req.usuario._id,
+            tipo,
+            descripcion,
+            estado,
+        });
+
+        logger.info(`Reseña creada por: ${req.usuario.id} con estado: ${estado}`,{
+            method: req.method, url: req.originalUrl, statusCode: 201,
+        });
+
+        const mensajes = {
+            'Publicada': 'Reseña publicada exitosamente',
+            'Pendiente': 'Reseña enviada para revisión, estará visible una vez aprobada por el admin',
+            'Eliminada': 'Reseña rechazada por contener contenido inapropiado',
+        };
+
+        return res.status(201).json({ 
+            mensaje: mensajes[estado], 
+            estado, 
+            resena,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
