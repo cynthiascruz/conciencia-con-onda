@@ -20,13 +20,13 @@ const moderarConIA = async (texto) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`
                 },
-                body: JSON.stringify({inputs: texto}),
+                body: JSON.stringify({ inputs: texto }),
             }
         );
 
         if (!response.ok) {
             // Si la API falla, dejamos la reseña como 'Pendiente'
-            logger.warn('API no disponible, reseña marcada como Pendiente',{
+            logger.warn('API no disponible, reseña marcada como Pendiente', {
                 statusCode: response.status
             });
             return 'Pendiente';
@@ -40,21 +40,21 @@ const moderarConIA = async (texto) => {
 
         if (!toxic) {
             // Si no se encuentra la etiqueta 'toxic', asumimos que no es tóxico
-            logger.warn('Etiqueta "toxic" no encontrada en la respuesta de la API, reseña marcada como Publicada',{
-                payload: JSON.stringify(resultados),    
+            logger.warn('Etiqueta "toxic" no encontrada en la respuesta de la API, reseña marcada como Publicada', {
+                payload: JSON.stringify(resultados),
             });
             return 'Publicada';
         }
 
         const score = toxic.score;
-        logger.info (`Resultados de moderación: ${score.toFixed(2)}`);
+        logger.info(`Resultados de moderación: ${score.toFixed(2)}`);
 
         // Validación Eliminda/Pendiente
-        if(score >= .85) return 'Eliminada';
+        if (score >= .85) return 'Eliminada';
         if (score >= .60) return 'Pendiente';
         return 'Publicada';
-    } catch (error){
-        logger.warn (`Error inesperado ${error.message}. Estatus de reseña: Pendiente.`);
+    } catch (error) {
+        logger.warn(`Error inesperado ${error.message}. Estatus de reseña: Pendiente.`);
         return 'Pendiente';
     }
 };
@@ -66,22 +66,22 @@ const moderarConIA = async (texto) => {
     Acceso: Público
     Orden: Reciente a antiguo
 */
-export const listarResenas = async (req, res,next) => {
-    try{
+export const listarResenas = async (req, res, next) => {
+    try {
         const resenas = await Resena.find({
             id_lugar: req.params.lugarId,
             estado: 'Publicada'
         })
             .populate('id_autor', 'nombre apellido')
-            .sort({fecha_Resena: -1});
+            .sort({ fecha_Resena: -1 });
 
-        logger.info(`Reseñas listadas para lugar: ${req.params.lugarId}`,{
+        logger.info(`Reseñas listadas para lugar: ${req.params.lugarId}`, {
             method: req.method, url: req.originalUrl, statusCode: 200,
         });
 
         return res.status(200).json(resenas);
 
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -93,7 +93,7 @@ export const listarResenas = async (req, res,next) => {
     Acceso: Admin
 */
 
-export const listarResenasAdmin = async (req, res,next) => {
+export const listarResenasAdmin = async (req, res, next) => {
     try {
         const resenas = await Resena.find({
             id_lugar: req.params.lugarId,
@@ -102,9 +102,9 @@ export const listarResenasAdmin = async (req, res,next) => {
             .populate('id_autor', 'nombre apellido email')
             .sort({ fecha_Resena: -1 });
 
-            logger.info(`Reseñas listadas para admin del lugar: ${req.params.lugarId}`,{
-                method: req.method, url: req.originalUrl, statusCode: 200,
-            });
+        logger.info(`Reseñas listadas para admin del lugar: ${req.params.lugarId}`, {
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
         return res.status(200).json(resenas);
     } catch (error) {
         next(error);
@@ -117,7 +117,7 @@ export const listarResenasAdmin = async (req, res,next) => {
     Ruta: /api/resenas
     Acceso: Usuario autenticado
 */
-export const crearResena = async (req, res,next) => {
+export const crearResena = async (req, res, next) => {
     try {
         const { id_lugar, tipo, descripcion } = req.body;
 
@@ -126,10 +126,9 @@ export const crearResena = async (req, res,next) => {
             return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });
         }
 
-        // Validación si el lugar existe
-        const lugar = await Lugar.findById(id_lugar);
-        if (!lugar) {
-            return res.status(404).json({ mensaje: 'Lugar no encontrado' });
+        // Si el lugar no existe o no está aprobado, no acepta reseñas
+        if (!lugar || lugar.estado !== 'Aprobado') {
+            return res.status(404).json({ mensaje: 'Lugar no encontrado.' });
         }
 
         // Validar el estado de la reseña con IA
@@ -143,7 +142,7 @@ export const crearResena = async (req, res,next) => {
             estado,
         });
 
-        logger.info(`Reseña creada por: ${req.usuario.id} con estado: ${estado}`,{
+        logger.info(`Reseña creada por: ${req.usuario.id} con estado: ${estado}`, {
             method: req.method, url: req.originalUrl, statusCode: 201,
         });
 
@@ -153,12 +152,77 @@ export const crearResena = async (req, res,next) => {
             'Eliminada': 'Reseña rechazada por contener contenido inapropiado',
         };
 
-        return res.status(201).json({ 
-            mensaje: mensajes[estado], 
-            estado, 
+        return res.status(201).json({
+            mensaje: mensajes[estado],
+            estado,
             resena,
         });
 
+    } catch (error) {
+        next(error);
+    }
+};
+
+/*
+    Cambiar estado de una reseña
+    Metodo: PATCH
+    Ruta:   /api/resenas/:id/estado
+    Acceso: Solo Admin
+
+    Permite al admin realizar cualquier cambio de estado:
+    - Pendiente  -> Publicada  (aprobacion de resena en revision)
+    - Pendiente  -> Eliminada  (rechazo de resena en revision)
+    - Publicada  -> Eliminada  (baja de resena ya visible)
+    - Eliminada  -> Publicada  (reversion de eliminacion por error)
+*/
+export const cambiarEstadoResena = async (req, res, next) => {
+    try {
+        const { estado } = req.body;
+
+        // Validacion de que el estado sea uno de los valores permitidos
+        if (!['Publicada', 'Pendiente', 'Eliminada'].includes(estado)) {
+            return res.status(400).json({ mensaje: 'Estado invalido. Use Publicada, Pendiente o Eliminada.' });
+        }
+
+        const resena = await Resena.findById(req.params.id);
+        if (!resena) {
+            return res.status(404).json({ mensaje: 'Resena no encontrada.' });
+        }
+
+        resena.estado = estado;
+        await resena.save();
+
+        logger.info(`Estado de resena ${resena._id} cambiado a ${estado}`, {
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
+
+        return res.status(200).json({ mensaje: 'Estado de resena actualizado correctamente.', resena });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/*    
+    Listar resenas del usuario autenticado
+    Metodo: GET
+    Ruta:   /api/resenas/mis-resenas
+    Acceso: Usuario registrado
+*/
+export const misResenas = async (req, res, next) => {
+    try {
+        const resenas = await Resena.find({
+            id_autor: req.usuario.id,
+            estado: { $ne: 'Eliminada' },
+        })
+            .populate('id_lugar', 'nombre direccion')
+            .sort({ fecha_Resena: -1 });
+
+        logger.info(`Resenas propias obtenidas para usuario: ${req.usuario.id}`, {
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
+
+        return res.status(200).json(resenas);
     } catch (error) {
         next(error);
     }
