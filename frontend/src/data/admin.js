@@ -104,12 +104,13 @@ export const lugaresAprobados = [
 ]
 
 export const kpis = {
-  lugaresPendientes: 8,
-  lugaresAprobados:  142,
-  lugaresRechazados: 14,
-  usuariosTotal:     523,
-  usuariosNuevos:    12,   // últimos 7 días
-  reseñasTotal:      1840,
+  lugaresPendientes:  8,
+  lugaresAprobados:   142,
+  lugaresRechazados:  14,
+  usuariosTotal:      523,
+  usuariosNuevos:     12,   // últimos 7 días
+  reseñasTotal:       1840,
+  reseñasPendientes:  3,
 }
 
 export const lugaresPendientes = [

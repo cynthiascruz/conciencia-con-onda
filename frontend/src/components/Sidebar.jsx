@@ -23,6 +23,15 @@ const accesibilidadOpciones = [
 const Sidebar = ({ filtros, onCategoriaChange, onAccesibilidadChange, onVerificadoChange }) => {
   const [queryAcc, setQueryAcc] = useState("")
 
+  const hayFiltros = filtros.categoria !== null || filtros.accesibilidad.length > 0 || filtros.soloVerificados
+
+  const limpiarTodo = () => {
+    onCategoriaChange(null)
+    filtros.accesibilidad.forEach(op => onAccesibilidadChange(op))
+    onVerificadoChange(false)
+    setQueryAcc("")
+  }
+
   const opcionesFiltradas = accesibilidadOpciones.filter(op =>
     op.toLowerCase().includes(queryAcc.toLowerCase())
   )
@@ -32,11 +41,22 @@ const Sidebar = ({ filtros, onCategoriaChange, onAccesibilidadChange, onVerifica
       <div className="bg-white rounded-2xl border-2 border-slate-100 p-6 h-full">
 
         {/* Header */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="bg-[#1c16cd]/90 text-white w-8 h-8 rounded-lg flex items-center justify-center">
-            <span className="material-symbols-rounded">filter_alt</span>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="bg-[#1c16cd]/90 text-white w-8 h-8 rounded-lg flex items-center justify-center">
+              <span className="material-symbols-rounded">filter_alt</span>
+            </div>
+            <h2 className="font-bold text-[#171717]">Filtros</h2>
           </div>
-          <h2 className="font-bold text-slate-900">Filtros</h2>
+          {hayFiltros && (
+            <button
+              onClick={limpiarTodo}
+              className="flex items-center gap-1 text-xs text-slate-400 hover:text-[#d32f2f] font-medium transition-colors"
+            >
+              <span className="material-symbols-rounded" style={{ fontSize: "14px" }}>close</span>
+              Limpiar
+            </button>
+          )}
         </div>
 
         {/* Categoría */}
@@ -111,7 +131,7 @@ const Sidebar = ({ filtros, onCategoriaChange, onAccesibilidadChange, onVerifica
                         <span className="material-symbols-rounded text-white" style={{ fontSize: "12px", fontVariationSettings: "'wght' 700" }}>check</span>
                       )}
                     </div>
-                    <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+                    <span className="text-sm text-slate-600 group-hover:text-[#171717] transition-colors">
                       {opcion}
                     </span>
                   </label>

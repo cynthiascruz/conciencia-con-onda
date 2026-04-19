@@ -84,8 +84,9 @@ const PlaceCard = ({ lugar, onClick }) => {
               {reseñasCount.negativas}
             </span>
           </div>
-          <span className="text-[#1c16cd] font-semibold text-sm group-hover:underline">
-            Ver más →
+          <span className="flex items-center gap-1 text-[#1c16cd] font-bold text-xs bg-[#1c16cd]/10 group-hover:bg-[#1c16cd] group-hover:text-white px-3 py-1.5 rounded-full transition-all duration-200">
+            Ver más
+            <span className="material-symbols-rounded" style={{ fontSize: "14px" }}>arrow_forward</span>
           </span>
         </div>
 

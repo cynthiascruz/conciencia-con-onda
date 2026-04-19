@@ -34,8 +34,8 @@ const Field = ({ label, icon, children }) => (
 )
 
 const Toast = ({ msg, ok }) => (
-  <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-semibold animate-[tabFade_0.2s_ease]
-    ${ok ? "bg-[#13da28] text-[#063d0c]" : "bg-[#d32f2f] text-white"}`}>
+  <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-semibold animate-[tabFade_0.2s_ease]
+    ${ok ? "bg-[#13da28] text-white" : "bg-[#d32f2f] text-white"}`}>
     <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>{ok ? "check_circle" : "error"}</span>
     {msg}
   </div>

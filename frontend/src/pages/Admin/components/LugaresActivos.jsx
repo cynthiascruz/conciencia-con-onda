@@ -264,7 +264,7 @@ const LugaresActivos = () => {
   })
 
   return (
-    <div>
+    <div className="w-full">
       <h2 className="font-extrabold text-2xl text-[#171717] mb-1">Lugares</h2>
       <p className="text-slate-400 text-sm mb-6">Gestiona todos los lugares aprobados en la plataforma</p>
 
@@ -334,7 +334,7 @@ const LugaresActivos = () => {
               </div>
 
               <div className="p-4">
-                <p className="font-bold text-slate-900 text-sm mb-1 truncate">{lugar.nombre}</p>
+                <p className="font-bold text-[#171717] text-sm mb-1 truncate">{lugar.nombre}</p>
                 <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
                   <Icon name="location_on" size={12} />
                   <span className="truncate">{lugar.direccion}</span>

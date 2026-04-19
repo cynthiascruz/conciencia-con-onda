@@ -1,7 +1,7 @@
 const steps = [
   {
     number: "01",
-    icon: <span className="material-icons-round">search</span>,
+    icon: <span className="material-symbols-rounded">search</span>,
     color: "bg-[#1c16cd]/90",
     borderColor: "border-[#1c16cd]/90",
     title: "Busca",
@@ -9,7 +9,7 @@ const steps = [
   },
   {
     number: "02",
-    icon: <span className="material-icons-round">tune</span>,
+    icon: <span className="material-symbols-rounded">tune</span>,
     color: "bg-[#ff8c2a]/90",
     borderColor: "border-[#ff8c2a]/90",
     title: "Filtra",
@@ -17,7 +17,7 @@ const steps = [
   },
   {
     number: "03",
-    icon: <span className="material-icons-round">place</span>,
+    icon: <span className="material-symbols-rounded">location_on</span>,
     color: "bg-[#13da28]/90",
     borderColor: "border-[#13da28]/90",
     title: "Encuentra",
@@ -25,7 +25,7 @@ const steps = [
   },
   {
     number: "04",
-    icon: <span className="material-icons-round">thumb_up</span>,
+    icon: <span className="material-symbols-rounded">rate_review</span>,
     color: "bg-[#7b1fa2]/90",
     borderColor: "border-[#7b1fa2]/90",
     title: "Comparte",

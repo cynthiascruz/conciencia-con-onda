@@ -26,8 +26,8 @@ const inputText = "flex-1 outline-none text-sm text-slate-800 placeholder:text-s
 const Toast = ({ mensaje, tipo }) => {
   const esError = tipo === 'error'
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-lg text-sm font-semibold animate-[tabFade_0.2s_ease]
-      ${esError ? 'bg-[#d32f2f] text-white' : 'bg-[#13da28] text-[#063d0c]'}`}>
+    <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-lg text-sm font-semibold animate-[tabFade_0.2s_ease]
+      ${esError ? 'bg-[#d32f2f] text-white' : 'bg-[#13da28] text-white'}`}>
       <span className="material-symbols-rounded" style={{ fontSize: '18px' }}>
         {esError ? 'error' : 'check_circle'}
       </span>

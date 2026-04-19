@@ -27,7 +27,7 @@ const SORT_OPTIONS = [
   { value: "nombre", label: "Nombre"            },
 ]
 
-const PER_PAGE = 8
+const PER_PAGE = 10
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const formatFecha = (iso) =>
@@ -271,7 +271,7 @@ const Usuarios = () => {
   const hayFiltrosActivos = filtroRol !== "todos" || filtroEstado !== "todos"
 
   return (
-    <div>
+    <div className="w-full">
       {/* ── Encabezado ── */}
       <div className="flex items-start justify-between mb-6">
         <div>

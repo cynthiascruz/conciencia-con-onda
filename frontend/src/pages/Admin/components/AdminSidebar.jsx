@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import logo from "../../../assets/logotipo.svg"
 import { Icon, navItems } from "../constants"
 
-const AdminSidebar = ({ seccion, setSeccion, onLogout, pendientesCount }) => {
+const AdminSidebar = ({ seccion, setSeccion, onLogout, pendientesCount, reseñasPendientesCount }) => {
   const navigate = useNavigate()
 
   return (
@@ -34,6 +34,11 @@ const AdminSidebar = ({ seccion, setSeccion, onLogout, pendientesCount }) => {
             {key === "pendientes" && pendientesCount > 0 && (
               <span className="ml-auto text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-[#faea1f] text-[#1c16cd]/90">
                 {pendientesCount}
+              </span>
+            )}
+            {key === "reseñas" && reseñasPendientesCount > 0 && (
+              <span className="ml-auto text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-[#ff8c2a] text-white">
+                {reseñasPendientesCount}
               </span>
             )}
           </button>

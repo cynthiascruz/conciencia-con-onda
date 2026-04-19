@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom"
+
 const CTA = () => {
+  const navigate = useNavigate()
   return (
     <section className="bg-[#f8f8f8] py-16 px-6">
       <div className="max-w-5xl mx-auto">
@@ -18,8 +21,11 @@ const CTA = () => {
 
           {/* Botones */}
           <div className="relative z-10 flex flex-wrap justify-center gap-4">
-            <button className="flex items-center gap-2 bg-[#1c16cd]/90 hover:bg-[#15119e] text-white font-bold px-7 py-3.5 rounded-full transition-colors shadow-lg">
-              <span className="material-icons-round">explore</span>
+            <button
+              onClick={() => navigate("/lugares")}
+              className="flex items-center gap-2 bg-[#1c16cd]/90 hover:bg-[#15119e] text-white font-bold px-7 py-3.5 rounded-full transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg"
+            >
+              <span className="material-symbols-rounded">explore</span>
               Explorar lugares
             </button>
           </div>

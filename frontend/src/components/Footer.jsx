@@ -1,5 +1,6 @@
+import { useNavigate } from "react-router-dom"
 import logo from '../assets/logotipo.svg'
-import { Instagram, Facebook, Twitter, Mail } from "lucide-react"
+import { Instagram, Facebook, Mail } from "lucide-react"
 
 const socialIcons = [
   { icon: <Instagram className="w-4 h-4" />, label: "Instagram" },
@@ -11,21 +12,34 @@ const footerLinks = [
   {
     title: "Explorar",
     color: "text-[#faea1f]",
-    links: ["Categorías", "Destacados", "Nuevos Lugares"],
+    links: [
+      { label: "Todos los lugares", to: "/lugares" },
+      { label: "Museos",            to: "/lugares?q=Museo"       },
+      { label: "Parques",           to: "/lugares?q=Parque"      },
+      { label: "Restaurantes",      to: "/lugares?q=Restaurante" },
+    ],
   },
   {
     title: "Recursos",
     color: "text-[#ff8c2a]",
-    links: ["Cómo Funciona", "Guía de Accesibilidad", "Preguntas Frecuentes", "Noticias"],
+    links: [
+      { label: "Cómo Funciona",  to: "/#como-funciona" },
+      { label: "Noticias",       to: "/noticias"        },
+      { label: "Proponer lugar", to: "/lugares"         },
+    ],
   },
   {
     title: "Proyecto",
     color: "text-[#13da28]",
-    links: ["Sobre Nosotros", "Contacto", "Colaboradores"],
+    links: [
+      { label: "Iniciar sesión", to: "/login"    },
+      { label: "Crear cuenta",   to: "/registro" },
+    ],
   },
 ]
 
 const Footer = () => {
+  const navigate = useNavigate()
   return (
     <footer className="bg-[#1a18cd]/90 px-6 pt-16 pb-8">
       <div className="max-w-6xl mx-auto">
@@ -75,11 +89,14 @@ const Footer = () => {
                 {title}
               </h4>
               <ul className="flex flex-col gap-3">
-                {links.map(link => (
-                  <li key={link}>
-                    <a href="#" className="text-white/70 hover:text-white text-sm transition-colors">
-                      {link}
-                    </a>
+                {links.map(({ label, to }) => (
+                  <li key={label}>
+                    <button
+                      onClick={() => navigate(to)}
+                      className="text-white/70 hover:text-white text-sm transition-colors text-left"
+                    >
+                      {label}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -91,7 +108,7 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-white/30 pt-8 flex justify-center">
           <p className="text-white/60 text-xs">
-            2026 Conciencia con Onda. Hecho con ♥ en Monterrey.
+            © 2026 Conciencia con Onda. Hecho con ♥ en Monterrey.
           </p>
         </div>
 

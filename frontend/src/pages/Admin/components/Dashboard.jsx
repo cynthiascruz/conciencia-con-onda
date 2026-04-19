@@ -69,7 +69,7 @@ const UserItem = ({ usuario }) => {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-const Dashboard = ({ setSeccion, pendientesCount }) => {
+const Dashboard = ({ setSeccion, pendientesCount, reseñasPendientesCount = 0 }) => {
   const recentUsers    = [...usuarios]
     .sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro))
     .slice(0, 5)
@@ -77,7 +77,7 @@ const Dashboard = ({ setSeccion, pendientesCount }) => {
   const recentPending  = lugaresPendientes.slice(0, 4)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6">
 
       {/* ── Bienvenida ── */}
       <div className="flex items-start justify-between">
@@ -104,7 +104,7 @@ const Dashboard = ({ setSeccion, pendientesCount }) => {
         <KpiCard valor={pendientesCount}       label="Lugares pendientes"  icon="pending_actions" color="bg-[#ff8c2a]/90" onClick={() => setSeccion("pendientes")} />
         <KpiCard valor={kpis.lugaresAprobados} label="Lugares aprobados"   icon="verified"        color="bg-[#13da28]/90" onClick={() => setSeccion("lugares")}    />
         <KpiCard valor={kpis.usuariosTotal}    label="Usuarios registrados" icon="group"           color="bg-[#1c16cd]/90" onClick={() => setSeccion("usuarios")}   />
-        <KpiCard valor={kpis.reseñasTotal}     label="Reseñas publicadas"  icon="rate_review"     color="bg-[#7b1fa2]/90" />
+        <KpiCard valor={reseñasPendientesCount} label="Reseñas pendientes IA" icon="rate_review" color="bg-[#7b1fa2]/90" onClick={() => setSeccion("reseñas")} />
       </div>
 
       {/* ── Dos columnas ── */}
@@ -174,8 +174,8 @@ const Dashboard = ({ setSeccion, pendientesCount }) => {
           {[
             { label: "Revisar pendientes", icon: "pending_actions", seccion: "pendientes", accent: "bg-[#ff8c2a]/10 text-[#c2620a] hover:bg-[#ff8c2a]/20" },
             { label: "Gestionar lugares",  icon: "location_on",     seccion: "lugares",    accent: "bg-[#13da28]/10 text-[#0a8a1a] hover:bg-[#13da28]/20" },
+            { label: "Moderar reseñas",    icon: "rate_review",     seccion: "reseñas",    accent: "bg-[#7b1fa2]/10 text-[#7b1fa2] hover:bg-[#7b1fa2]/20" },
             { label: "Ver usuarios",       icon: "group",           seccion: "usuarios",   accent: "bg-[#1c16cd]/10 text-[#1c16cd] hover:bg-[#1c16cd]/20" },
-            { label: "Volver al inicio",   icon: "home",            seccion: null,         accent: "bg-slate-100 text-slate-600 hover:bg-slate-200", href: "/" },
           ].map(({ label, icon, seccion, accent, href }) => (
             <button
               key={label}

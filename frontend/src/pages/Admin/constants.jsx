@@ -26,5 +26,6 @@ export const navItems = [
   { key: "dashboard",  label: "Dashboard",  icon: "dashboard"   },
   { key: "pendientes", label: "Pendientes", icon: "schedule"    },
   { key: "lugares",    label: "Lugares",    icon: "location_on" },
+  { key: "reseñas",    label: "Reseñas",    icon: "rate_review" },
   { key: "usuarios",   label: "Usuarios",   icon: "group"       },
 ]

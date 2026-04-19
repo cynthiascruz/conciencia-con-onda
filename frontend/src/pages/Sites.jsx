@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import { lugares, reseñas as reseñasIniciales } from "../data/lugares"
 import PlaceCard from "../components/Placecard"
@@ -9,7 +9,15 @@ import { useAuth } from "../context/AuthContext"
 
 const Lugares = () => {
   const { usuario } = useAuth()
-  const [query, setQuery] = useState("")
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "")
+
+  // Sync con param ?q= si cambia por navegación
+  useEffect(() => {
+    const q = searchParams.get("q") ?? ""
+    setQuery(q)
+  }, [searchParams])
+
   const [lugarSeleccionado, setLugarSeleccionado] = useState(null)
   const [mostrarAddModal, setMostrarAddModal] = useState(false)
   const [reseñas, setReseñas] = useState(reseñasIniciales)
@@ -121,7 +129,7 @@ const Lugares = () => {
               ))
             ) : (
               <div className="col-span-3 flex flex-col items-center justify-center py-20 text-center">
-                <span className="text-5xl mb-4">🔍</span>
+                <span className="material-symbols-rounded text-slate-200 mb-4" style={{ fontSize: "56px" }}>location_off</span>
                 <p className="font-black text-slate-700 text-lg mb-2">
                   No encontramos lugares
                 </p>
