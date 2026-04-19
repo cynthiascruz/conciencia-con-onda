@@ -89,7 +89,7 @@ export const listarResenas = async (req, res, next) => {
 /*
     Listar reseñas (publicadas y pendientes)
     Método: GET
-    Ruta: /api/resenas/:ligarId/admin
+    Ruta: /api/resenas/:lugarId/admin
     Acceso: Admin
 */
 
@@ -126,6 +126,7 @@ export const crearResena = async (req, res, next) => {
             return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });
         }
 
+        const lugar = await Lugar.findById(id_lugar);
         // Si el lugar no existe o no está aprobado, no acepta reseñas
         if (!lugar || lugar.estado !== 'Aprobado') {
             return res.status(404).json({ mensaje: 'Lugar no encontrado.' });
@@ -134,9 +135,9 @@ export const crearResena = async (req, res, next) => {
         // Validar el estado de la reseña con IA
         const estado = await moderarConIA(descripcion);
         // Crear la reseña
-        const Resena = await Resena.create({
+        const resena = await Resena.create({
             id_lugar,
-            id_autor: req.usuario._id,
+            id_autor: req.usuario.id,
             tipo,
             descripcion,
             estado,
@@ -208,7 +209,7 @@ export const cambiarEstadoResena = async (req, res, next) => {
     Metodo: GET
     Ruta:   /api/resenas/mis-resenas
     Acceso: Usuario registrado
-*/
+
 export const misResenas = async (req, res, next) => {
     try {
         const resenas = await Resena.find({
@@ -227,3 +228,4 @@ export const misResenas = async (req, res, next) => {
         next(error);
     }
 };
+*/
