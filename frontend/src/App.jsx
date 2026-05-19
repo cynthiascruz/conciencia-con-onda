@@ -7,6 +7,7 @@ import Sites from './pages/Sites'
 import Auth from './pages/Auth'
 import Admin from './pages/Admin'
 import Perfil from './pages/Perfil'
+import PrivateRoute from './components/PrivateRoute'
 
 const Layout = () => (
   <>
@@ -31,19 +32,25 @@ function App() {
 
           {/* Con Navbar y Footer */}
           <Route path="/" element={<Layout />}>
-            <Route index          element={<Home />}   />
-            <Route path="lugares" element={<Sites />}  />
-            <Route path="perfil"  element={<Perfil />} />
+            <Route index element={<Home />} />
+            <Route path="lugares" element={<Sites />} />
+
+            {/* Requiere sesión */}
+            <Route element={<PrivateRoute />}>
+              <Route path="perfil" element={<Perfil />} />
+            </Route>
           </Route>
 
-          {/* Con Navbar, sin Footer */}
+          {/* Con Navbar y sin Footer */}
           <Route element={<LayoutSinFooter />}>
-            <Route path="/login"    element={<Auth mode="login"    />} />
+            <Route path="/login" element={<Auth mode="login" />} />
             <Route path="/registro" element={<Auth mode="registro" />} />
           </Route>
 
-          {/* Sin Navbar ni Footer */}
-          <Route path="/admin" element={<Admin />} />
+          {/* Sin Navbar ni Footer, requiere sesión y rol Admin */}
+          <Route element={<PrivateRoute rol="Admin" />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
 
         </Routes>
       </AuthProvider>
