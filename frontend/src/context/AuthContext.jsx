@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from "react"
+import { authService } from "../services/auth.service"
 
 const AuthContext = createContext(null)
 
@@ -19,9 +20,15 @@ export const AuthProvider = ({ children }) => {
     setUsuario(data)
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(LS_KEY)
-    setUsuario(null)
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout()
+    } catch {
+      // Si el servidor falla, igual cerramos la sesión en el frontend
+    } finally {
+      localStorage.removeItem(LS_KEY)
+      setUsuario(null)
+    }
   }, [])
 
   const actualizarPerfil = useCallback((datos) => {

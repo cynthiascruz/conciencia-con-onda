@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react"
+import { lugaresService } from "../services/lugares.service"
+import { categoriasService } from "../services/categorias.service"
 
 const CATEGORIAS = ["Museo", "Parque", "Restaurante", "Cafetería", "Estadio", "Centro Comercial", "Hotel"]
 const CATEGORIA_COLORS = {

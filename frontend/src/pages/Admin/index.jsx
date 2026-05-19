@@ -8,9 +8,11 @@ import Pendientes from "./components/Pendientes"
 import LugaresActivos from "./components/LugaresActivos"
 import Reseñas from "./components/Reseñas"
 import Usuarios from "./components/Usuarios"
+import { useAuth } from "../../context/AuthContext"
 
 const Admin = () => {
   const navigate                                          = useNavigate()
+  const { logout }                                        = useAuth()
   const [seccion, setSeccion]                             = useState("dashboard")
   const [pendientesCount, setPendientesCount]             = useState(initialPendientes.length)
   const [reseñasPendientesCount, setReseñasPendientes]   = useState(
@@ -22,7 +24,7 @@ const Admin = () => {
       <AdminSidebar
         seccion={seccion}
         setSeccion={setSeccion}
-        onLogout={() => navigate("/login")}
+        onLogout={async () => { await logout(); navigate("/login") }}
         pendientesCount={pendientesCount}
         reseñasPendientesCount={reseñasPendientesCount}
       />

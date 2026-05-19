@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { categorias } from "../data/lugares"
+// import { categorias } from "../data/lugares"
 
 const accesibilidadOpciones = [
   "Rampa de acceso",
@@ -20,7 +20,7 @@ const accesibilidadOpciones = [
   "Espacio amplio",
 ]
 
-const Sidebar = ({ filtros, onCategoriaChange, onAccesibilidadChange, onVerificadoChange }) => {
+const Sidebar = ({ filtros, categorias = [], onCategoriaChange, onAccesibilidadChange, onVerificadoChange }) => {
   const [queryAcc, setQueryAcc] = useState("")
 
   const hayFiltros = filtros.categoria !== null || filtros.accesibilidad.length > 0 || filtros.soloVerificados
@@ -121,11 +121,13 @@ const Sidebar = ({ filtros, onCategoriaChange, onAccesibilidadChange, onVerifica
               opcionesFiltradas.map(opcion => {
                 const checked = filtros.accesibilidad.includes(opcion)
                 return (
-                  <label key={opcion} className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                      onClick={() => onAccesibilidadChange(opcion)}
-                      className={`w-4 h-4 rounded shrink-0 flex items-center justify-center border-2 transition-colors
-                        ${checked ? "bg-[#10c223] border-[#10c223]" : "bg-white border-slate-300 group-hover:border-[#10c223]"}`}
+                  <div
+                    key={opcion}
+                    onClick={() => onAccesibilidadChange(opcion)}
+                    className="flex items-center gap-3 cursor-pointer group"
+                  >
+                    <div className={`w-4 h-4 rounded shrink-0 flex items-center justify-center border-2 transition-colors
+                      ${checked ? "bg-[#10c223] border-[#10c223]" : "bg-white border-slate-300 group-hover:border-[#10c223]"}`}
                     >
                       {checked && (
                         <span className="material-symbols-rounded text-white" style={{ fontSize: "12px", fontVariationSettings: "'wght' 700" }}>check</span>
@@ -134,8 +136,9 @@ const Sidebar = ({ filtros, onCategoriaChange, onAccesibilidadChange, onVerifica
                     <span className="text-sm text-slate-600 group-hover:text-[#171717] transition-colors">
                       {opcion}
                     </span>
-                  </label>
+                  </div>
                 )
+
               })
             )}
           </div>

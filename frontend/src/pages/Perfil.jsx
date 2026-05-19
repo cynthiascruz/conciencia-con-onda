@@ -326,7 +326,7 @@ const Perfil = () => {
             <p className="text-slate-400 text-xs mt-0.5">Saldrás de tu cuenta en este dispositivo</p>
           </div>
           <button
-            onClick={() => { logout(); navigate("/") }}
+            onClick={async () => { await logout(); navigate("/") }}
             className="flex items-center gap-2 border-2 border-slate-200 text-slate-500 hover:border-[#d32f2f]/40 hover:text-[#d32f2f] font-bold text-sm px-5 py-2.5 rounded-xl transition-all"
           >
             <span className="material-symbols-rounded" style={{ fontSize: "17px" }}>logout</span>

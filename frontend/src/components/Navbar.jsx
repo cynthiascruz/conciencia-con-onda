@@ -33,9 +33,9 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handler)
   }, [open])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setOpen(false)
-    logout()
+    await logout()
     navigate("/")
   }
 

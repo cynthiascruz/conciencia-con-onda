@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
-import { lugares, reseñas as reseñasIniciales } from "../data/lugares"
+// import { lugares, reseñas as reseñasIniciales } from "../data/lugares"
 import PlaceCard from "../components/Placecard"
 import Sidebar from "../components/Sidebar"
 import PlaceModal from "../components/Placemodal"
 import AddLugarModal from "../components/AddLugarModal"
 import { useAuth } from "../context/AuthContext"
+import { lugaresService, adaptarLugar } from "../services/lugares.service"
+import { categoriasService } from "../services/categorias.service"
+
 
 const Lugares = () => {
   const { usuario } = useAuth()
@@ -13,21 +16,41 @@ const Lugares = () => {
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "")
 
   // Sync con param ?q= si cambia por navegación
-  useEffect(() => {
-    const q = searchParams.get("q") ?? ""
-    setQuery(q)
-  }, [searchParams])
+useEffect(() => {
+  const cargar = async () => {
+    try {
+      setCargando(true)
+      const [lugaresRaw, categoriasRaw] = await Promise.all([
+        lugaresService.listar(),
+        categoriasService.listar(),
+      ])
+      setLugares(lugaresRaw.map(adaptarLugar))
+      setCategorias(categoriasRaw)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setCargando(false)
+    }
+  }
+  cargar()
+}, [])
+
+  const [lugares,    setLugares]    = useState([])
+  const [categorias, setCategorias] = useState([])
+  const [cargando,   setCargando]   = useState(true)
+  const [error,      setError]      = useState(null)
+
 
   const [lugarSeleccionado, setLugarSeleccionado] = useState(null)
   const [mostrarAddModal, setMostrarAddModal] = useState(false)
-  const [reseñas, setReseñas] = useState(reseñasIniciales)
+ // const [reseñas, setReseñas] = useState(reseñasIniciales)
   const [filtros, setFiltros] = useState({
     categoria:       null,
     accesibilidad:   [],
     soloVerificados: false,
   })
 
-  const sesionActiva = !!usuario
+  // const sesionActiva = !!usuario
 
   // Lógica de filtrado
   const lugaresFiltrados = lugares.filter(lugar => {
@@ -98,6 +121,7 @@ const Lugares = () => {
 
         <Sidebar
           filtros={filtros}
+          categorias ={categorias}
           onCategoriaChange={handleCategoria}
           onAccesibilidadChange={handleAccesibilidad}
           onVerificadoChange={handleVerificado}
@@ -108,7 +132,7 @@ const Lugares = () => {
             <p className="text-md font-bold text-slate-500">
               <span className="text-[#1c16cd]/90">{lugaresFiltrados.length}</span> lugares encontrados
             </p>
-            {sesionActiva && (
+            {usuario && (
               <button
                 onClick={() => setMostrarAddModal(true)}
                 className="flex items-center gap-2 bg-[#1c16cd]/90 hover:bg-[#1510a0] text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow transition-all hover:-translate-y-0.5 active:scale-95"
@@ -118,27 +142,46 @@ const Lugares = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {lugaresFiltrados.length > 0 ? (
-              lugaresFiltrados.map(lugar => (
-                <PlaceCard
-                  key={lugar._id}
-                  lugar={lugar}
-                  onClick={() => setLugarSeleccionado(lugar)}
-                />
-              ))
-            ) : (
-              <div className="col-span-3 flex flex-col items-center justify-center py-20 text-center">
-                <span className="material-symbols-rounded text-slate-200 mb-4" style={{ fontSize: "56px" }}>location_off</span>
-                <p className="font-black text-slate-700 text-lg mb-2">
-                  No encontramos lugares
-                </p>
-                <p className="text-slate-400 text-sm">
-                  Intenta con otros filtros o una búsqueda diferente
-                </p>
-              </div>
-            )}
-          </div>
+{cargando && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <span className="material-symbols-rounded text-[#1c16cd] animate-spin" style={{ fontSize: "40px" }}>
+                progress_activity
+              </span>
+              <p className="text-slate-400 text-sm font-medium">Cargando lugares...</p>
+            </div>
+          )}
+
+          {!cargando && error && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <span className="material-symbols-rounded text-[#d32f2f]" style={{ fontSize: "40px" }}>wifi_off</span>
+              <p className="font-black text-slate-700">No se pudo conectar con el servidor</p>
+              <p className="text-slate-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          {!cargando && !error && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {lugaresFiltrados.length > 0 ? (
+                lugaresFiltrados.map(lugar => (
+                  <PlaceCard
+                    key={lugar._id}
+                    lugar={lugar}
+                    onClick={() => setLugarSeleccionado(lugar)}
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 flex flex-col items-center justify-center py-20 text-center">
+                  <span className="material-symbols-rounded text-slate-200 mb-4" style={{ fontSize: "56px" }}>location_off</span>
+                  <p className="font-black text-slate-700 text-lg mb-2">
+                    No encontramos lugares
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    Intenta con otros filtros o una búsqueda diferente
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
       </div>
@@ -148,8 +191,8 @@ const Lugares = () => {
         <PlaceModal
           lugar={lugarSeleccionado}
           onClose={() => setLugarSeleccionado(null)}
-          reseñasData={reseñas}
-          onNuevaReseña={(nueva) => setReseñas(r => [...r, nueva])}
+          reseñasData={[]}
+          onNuevaReseña={() => {}}
         />
       )}
 
