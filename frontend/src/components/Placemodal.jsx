@@ -1,11 +1,27 @@
 import { useState, useEffect } from "react"
+import { useAuth } from "../context/AuthContext"
+import { resenasService } from "../services/resenas.services"
+
+//Adaptador de reseñas
+const adaptarResena = (reseñas) => ({
+  _id: reseñas._id,
+  usuarioNombre: `${reseñas.id_autor?.nombre ?? ''} ${reseñas.id_autor?.apellido ?? ''}`.trim(),
+  tipo: reseñas.tipo,
+  texto: reseñas.descripcion,
+  fecha: new Date(reseñas.fecha_Resena).toLocaleDateString('es-MX', {
+    year: 'numeric', month: 'short', day: 'numeric'
+  }),
+})
 
 const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
-  const [reseñas, setReseñas] = useState(() =>
-    reseñasData.filter(r => r.lugarId === lugar._id)
-  )
+  const { usuario } = useAuth()
+  const [reseñas, setReseñas] = useState([])
+  const [cargandoRes, setCargandoRes] = useState(true)
+  const [publicando, setPublicando] = useState(false)
+  const [errorPublicar, setErrorPublicar] = useState(null)
+  const [mensajePublicado, setMensajePublicado] = useState(null)
   const [mostrarForm, setMostrarForm] = useState(false)
-  const [tipoReseña, setTipoReseña]   = useState("positiva")
+  const [tipoReseña, setTipoReseña] = useState("Positiva")
   const [textoReseña, setTextoReseña] = useState("")
 
   useEffect(() => {
@@ -20,6 +36,15 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
       document.body.style.overflow = "auto"
     }
   }, [onClose])
+
+  useEffect(() => {
+    setCargandoRes(true)
+    resenasService.listarPorLugar(lugar._id)
+      .then(data => setReseñas(data.map(adaptarResena)))
+      .catch(() => { })
+      .finally(() => setCargandoRes(false))
+  }, [lugar._id])
+
 
   if (!lugar) return null
 
@@ -37,21 +62,30 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
     sitioWeb,
   } = lugar
 
-  const handlePublicar = () => {
+  //Contador de reseñas
+  const totalPositivas = reseñas.filter(r => r.tipo === "Positiva").length
+  const totalNegativas = reseñas.filter(r => r.tipo === "Negativa").length
+
+  //Evento para publicar reseña
+  const handlePublicar = async () => {
     if (!textoReseña.trim()) return
-    const nueva = {
-      _id:              `res_${Date.now()}`,
-      lugarId:          lugar._id,
-      usuarioNombre:    "Tú",
-      usuarioIniciales: "TU",
-      tipo:             tipoReseña,
-      texto:            textoReseña.trim(),
-      fecha:            new Date().toISOString().split("T")[0],
+    setPublicando(true)
+    setErrorPublicar(null)
+    try {
+      const nueva = await resenasService.crear(lugar._id, tipoReseña, textoReseña.trim())
+      if (nueva.estado === "Publicada") {
+        setReseñas(r => [...r, adaptarResena(nueva)])
+        setMensajePublicado("¡Reseña publicada!")
+      } else {
+        setMensajePublicado("Tu reseña está en revisión y será publicada pronto.")
+      }
+      setTextoReseña("")
+      setMostrarForm(false)
+    } catch (err) {
+      setErrorPublicar(err.message)
+    } finally {
+      setPublicando(false)
     }
-    setReseñas(r => [...r, nueva])
-    if (onNuevaReseña) onNuevaReseña(nueva)
-    setTextoReseña("")
-    setMostrarForm(false)
   }
 
   return (
@@ -117,11 +151,11 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
             <div className="flex flex-wrap items-center gap-3 mb-6 pb-6 border-b border-slate-100">
               <div className="flex items-center gap-1.5 bg-[#13da28]/10 px-3 py-2 rounded-full">
                 <span className="material-symbols-rounded text-[#13da28]" style={{ fontSize: "20px" }}>sentiment_excited</span>
-                <span className="font-bold text-[#13da28] text-sm">{reseñasCount.positivas}</span>
+                <span className="font-bold text-[#13da28] text-sm">{totalPositivas}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-[#d32f2f]/10 px-3 py-2 rounded-full">
                 <span className="material-symbols-rounded text-[#d32f2f]" style={{ fontSize: "20px" }}>sentiment_stressed</span>
-                <span className="font-bold text-[#d32f2f] text-sm">{reseñasCount.negativas}</span>
+                <span className="font-bold text-[#d32f2f] text-sm">{totalNegativas}</span>
               </div>
             </div>
 
@@ -208,7 +242,11 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
                 )}
               </h3>
 
-              {reseñas.length === 0 ? (
+              {cargandoRes ? (
+                <div className="flex justify-center py-6">
+                  <span className="material-symbols-rounded text-[#1c16cd] animate-spin" style={{ fontSize: "28px" }}>progress_activity</span>
+                </div>
+              ) : reseñas.length === 0 ? (
                 <div className="text-center py-6 bg-slate-50 rounded-2xl">
                   <span className="material-symbols-rounded text-slate-300 block mb-2" style={{ fontSize: "36px" }}>chat_bubble</span>
                   <p className="text-slate-400 text-sm font-medium">Aún no hay reseñas</p>
@@ -221,10 +259,10 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`material-symbols-rounded ${r.tipo === "positiva" ? "text-[#13da28]" : "text-[#d32f2f]"}`}
+                            className={`material-symbols-rounded ${r.tipo === "Positiva" ? "text-[#13da28]" : "text-[#d32f2f]"}`}
                             style={{ fontSize: "20px" }}
                           >
-                            {r.tipo === "positiva" ? "sentiment_excited" : "sentiment_stressed"}
+                            {r.tipo === "Positiva" ? "sentiment_excited" : "sentiment_stressed"}
                           </span>
                           <span className="text-sm font-bold text-slate-700">{r.usuarioNombre}</span>
                         </div>
@@ -239,9 +277,20 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
 
             {/* Acción / Formulario de reseña */}
             <div className="pt-4 border-t border-slate-100">
-              {!mostrarForm ? (
+              {mensajePublicado && (
+                <div className="flex items-center gap-2 bg-[#13da28]/10 text-[#0a8a1a] px-4 py-3 rounded-xl mb-3 text-sm font-semibold">
+                  <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>check_circle</span>
+                  {mensajePublicado}
+                </div>
+              )}
+              {!usuario ? (
+                <p className="text-center text-sm text-slate-400 py-4">
+                  <a href="/login" className="text-[#1c16cd] font-bold hover:underline">Inicia sesión</a>{" "}
+                  para agregar una reseña
+                </p>
+              ) : !mostrarForm ? (
                 <button
-                  onClick={() => setMostrarForm(true)}
+                  onClick={() => { setMostrarForm(true); setMensajePublicado(null) }}
                   className="w-full flex items-center justify-center gap-2 border-2 border-[#ff8c2a] text-[#ff8c2a]/90 hover:bg-[#ff8c2a]/90 hover:text-white font-bold text-sm py-4 rounded-full transition-colors"
                 >
                   <span className="material-symbols-rounded" style={{ fontSize: "22px" }}>hotel_class</span>
@@ -253,23 +302,21 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
                   {/* Tipo */}
                   <div className="flex gap-3">
                     <button
-                      onClick={() => setTipoReseña("positiva")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-bold text-sm transition-all ${
-                        tipoReseña === "positiva"
-                          ? "bg-[#13da28]/10 border-[#13da28] text-[#0a8a1a]"
-                          : "border-slate-200 text-slate-500 hover:border-slate-300"
-                      }`}
+                      onClick={() => setTipoReseña("Positiva")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-bold text-sm transition-all ${tipoReseña === "Positiva"
+                        ? "bg-[#13da28]/10 border-[#13da28] text-[#0a8a1a]"
+                        : "border-slate-200 text-slate-500 hover:border-slate-300"
+                        }`}
                     >
                       <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>sentiment_excited</span>
                       Positiva
                     </button>
                     <button
-                      onClick={() => setTipoReseña("negativa")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-bold text-sm transition-all ${
-                        tipoReseña === "negativa"
-                          ? "bg-[#d32f2f]/10 border-[#d32f2f] text-[#d32f2f]"
-                          : "border-slate-200 text-slate-500 hover:border-slate-300"
-                      }`}
+                      onClick={() => setTipoReseña("Negativa")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-bold text-sm transition-all ${tipoReseña === "Negativa"
+                        ? "bg-[#d32f2f]/10 border-[#d32f2f] text-[#d32f2f]"
+                        : "border-slate-200 text-slate-500 hover:border-slate-300"
+                        }`}
                     >
                       <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>sentiment_stressed</span>
                       Negativa
@@ -286,20 +333,26 @@ const PlaceModal = ({ lugar, onClose, reseñasData = [], onNuevaReseña }) => {
                   />
 
                   {/* Botones */}
+                  {errorPublicar && (
+                    <p className="text-xs text-[#d32f2f] font-medium">{errorPublicar}</p>
+                  )}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { setMostrarForm(false); setTextoReseña("") }}
+                      onClick={() => { setMostrarForm(false); setTextoReseña(""); setErrorPublicar(null) }}
                       className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={handlePublicar}
-                      disabled={!textoReseña.trim()}
+                      disabled={!textoReseña.trim() || publicando}
                       className="flex-1 py-3 rounded-xl bg-[#ff8c2a] text-white font-bold text-sm hover:bg-[#e67a1a] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-rounded" style={{ fontSize: "16px" }}>send</span>
-                      Publicar reseña
+                      <span className="material-symbols-rounded" style={{ fontSize: "16px" }}>
+                        {publicando ? "progress_activity" : "send"}
+                      </span>
+                      {publicando ? "Publicando..." : "Publicar reseña"}
+                      
                     </button>
                   </div>
 

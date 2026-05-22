@@ -1,6 +1,7 @@
 import Resena from "../models/Resena.js";
 import Lugar from "../models/Lugar.js";
 import logger from "../utils/logger.js";
+// import { clear } from "winston";
 
 /*
     Moderación con IA
@@ -10,6 +11,10 @@ import logger from "../utils/logger.js";
     - toxicidad ≥ 0.60  → 'Pendiente'  (revisión manual por admin)
     - toxicidad ≥ 0.85  → 'Eliminada'  (rechazo automático)
  */
+ // Se implementa un timeout para evitar que la función quede colgada esperando una respuesta de la API
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout de 5 segundos
+
 const moderarConIA = async (texto) => {
     try {
         const response = await fetch(
@@ -21,8 +26,11 @@ const moderarConIA = async (texto) => {
                     'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`
                 },
                 body: JSON.stringify({ inputs: texto }),
+                options: { wait_for_model: true }, // Espera a que el modelo esté listo si está en reposo
+                signal: controller.signal, // Asociamos el signal para el timeout
             }
         );
+        clearTimeout(timeoutId); // Limpiamos el timeout si la respuesta llega a tiempo
 
         if (!response.ok) {
             // Si la API falla, dejamos la reseña como 'Pendiente'
