@@ -2,6 +2,7 @@
 
 import Usuario from '../models/Usuario.js';
 import logger from '../utils/logger.js';
+import bcryptjs from 'bcryptjs';
 
 /*
     Obtener todos los usuarios
@@ -9,7 +10,6 @@ import logger from '../utils/logger.js';
     Ruta: /api/usuarios
     Acceso: Solo administradores
 */
-
 export const listarUsuarios = async (req, res, next) => {
     try {
         const usuarios = await Usuario.find().select('-password');
@@ -71,7 +71,6 @@ export const cambiarRol = async (req, res, next) => {
     Acceso: Solo Admin
 */
 
-
 export const cambiarEstado = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -98,6 +97,47 @@ export const cambiarEstado = async (req, res, next) => {
         });
 
         return res.status(200).json({ mensaje: 'Estado actualizado correctamente.', usuario });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/*
+    Actualizar perfil del usuario
+    Método: PUT 
+    Ruta: /api/usuarios/perfil
+    Acceso: Usuario
+*/
+export const actualizarPerfil = async (req, res, next) => {
+    try {
+        const { nombre, apellido, password } = req.body;
+
+        const usuario = await Usuario.findById(req.usuario.id);
+        if (!usuario) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+        }
+
+        if (nombre)   usuario.nombre   = nombre;
+        if (apellido) usuario.apellido = apellido;
+
+        if (password) {
+            const salt       = await bcryptjs.genSalt(10);
+            usuario.password = await bcryptjs.hash(password, salt);
+        }
+
+        await usuario.save();
+
+        const usuarioActualizado = await Usuario.findById(usuario._id).select('-password');
+
+        logger.info(`Perfil actualizado: ${usuario.email}`, {
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
+
+        return res.status(200).json({
+            mensaje: 'Perfil actualizado correctamente.',
+            usuario: usuarioActualizado,
+        });
 
     } catch (error) {
         next(error);
