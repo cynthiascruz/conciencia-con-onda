@@ -111,18 +111,25 @@ export const cambiarEstado = async (req, res, next) => {
 */
 export const actualizarPerfil = async (req, res, next) => {
     try {
-        const { nombre, apellido, password } = req.body;
+        const { nombre, apellido, password, passwordActual } = req.body;
 
         const usuario = await Usuario.findById(req.usuario.id);
         if (!usuario) {
             return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
         }
 
-        if (nombre)   usuario.nombre   = nombre;
+        if (nombre) usuario.nombre = nombre;
         if (apellido) usuario.apellido = apellido;
 
         if (password) {
-            const salt       = await bcryptjs.genSalt(10);
+            if (!passwordActual) {
+                return res.status(400).json({ mensaje: 'Debes ingresar tu contraseña actual.' });
+            }
+            const esValida = await bcryptjs.compare(passwordActual, usuario.password);
+            if (!esValida) {
+                return res.status(400).json({ mensaje: 'La contraseña actual es incorrecta.' });
+            }
+            const salt = await bcryptjs.genSalt(10);
             usuario.password = await bcryptjs.hash(password, salt);
         }
 

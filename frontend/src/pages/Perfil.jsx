@@ -13,14 +13,14 @@ const getNombreCompleto = (u) =>
   [u?.nombre, u?.apellido].filter(Boolean).join(" ") || "—"
 
 const rolConfig = {
-  Admin:      { label: "Administrador", icon: "manage_accounts"     },
-  superadmin: { label: "Superadmin",    icon: "admin_panel_settings" },
-  usuario:    { label: "Usuario",       icon: "person"               },
+  Admin: { label: "Administrador", icon: "manage_accounts" },
+  superadmin: { label: "Superadmin", icon: "admin_panel_settings" },
+  usuario: { label: "Usuario", icon: "person" },
 }
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
-const inputBase  = "flex items-center gap-3 bg-white border-2 border-slate-200 focus-within:border-[#1c16cd]/70 rounded-xl px-4 py-3 transition-colors"
-const inputText  = "flex-1 outline-none text-sm text-slate-800 placeholder:text-slate-300 bg-transparent"
+const inputBase = "flex items-center gap-3 bg-white border-2 border-slate-200 focus-within:border-[#1c16cd]/70 rounded-xl px-4 py-3 transition-colors"
+const inputText = "flex-1 outline-none text-sm text-slate-800 placeholder:text-slate-300 bg-transparent"
 const labelClass = "block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"
 
 const Field = ({ label, icon, children }) => (
@@ -51,21 +51,23 @@ const Perfil = () => {
     return null
   }
 
-  const rol       = rolConfig[usuario.rol] ?? rolConfig.usuario
-  const fechaStr  = formatFecha(usuario.fechaRegistro)
+  const rol = rolConfig[usuario.rol] ?? rolConfig.usuario
+  const fechaStr = formatFecha(usuario.fechaRegistro)
 
-  const [editando, setEditando]   = useState(false)
-  const [showPass, setShowPass]   = useState(false)
-  const [showConf, setShowConf]   = useState(false)
-  const [loading, setLoading]     = useState(false)
-  const [toast, setToast]         = useState(null)
+  const [editando, setEditando] = useState(false)
+  const [showPass, setShowPass] = useState(false)
+  const [showConf, setShowConf] = useState(false)
+  const [showActual, setShowActual] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState(null)
 
   const [form, setForm] = useState({
-    nombre:       usuario.nombre    ?? "",
-    apellido:     usuario.apellido  ?? "",
-    email:        usuario.email     ?? "",
-    password:     "",
+    nombre: usuario.nombre ?? "",
+    apellido: usuario.apellido ?? "",
+    email: usuario.email ?? "",
+    password: "",
     passwordConf: "",
+    passwordActual: "",
   })
 
   const set = useCallback((key) => (e) => setForm(f => ({ ...f, [key]: e.target.value })), [])
@@ -77,26 +79,35 @@ const Perfil = () => {
 
   const cancelar = useCallback(() => {
     setForm({
-      nombre:       usuario.nombre    ?? "",
-      apellido:     usuario.apellido  ?? "",
-      email:        usuario.email     ?? "",
-      password:     "",
+      nombre: usuario.nombre ?? "",
+      apellido: usuario.apellido ?? "",
+      email: usuario.email ?? "",
+      password: "",
       passwordConf: "",
+      passwordActual: "",
     })
     setEditando(false)
   }, [usuario])
 
   const handleGuardar = async () => {
-    if (form.password && form.password !== form.passwordConf) {
-      return showToast("Las contraseñas no coinciden", false)
-    }
-    if (form.password && form.password.length < 6) {
-      return showToast("La contraseña debe tener al menos 6 caracteres", false)
+    if (form.password) {
+      if (!form.passwordActual) {
+        return showToast("Ingresa tu contraseña actual", false)
+      }
+      if (form.password !== form.passwordConf) {
+        return showToast("Las contraseñas no coinciden", false)
+      }
+      if (form.password.length < 6) {
+        return showToast("La contraseña debe tener al menos 6 caracteres", false)
+      }
     }
     setLoading(true)
     try {
-      const body = { nombre: form.nombre, apellido: form.apellido, email: form.email }
-      if (form.password) body.password = form.password
+      const body = { nombre: form.nombre, apellido: form.apellido }
+      if (form.password) {
+        body.password = form.password
+        body.passwordActual = form.passwordActual
+      }
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/perfil`, {
         method: "PUT",
@@ -109,12 +120,12 @@ const Perfil = () => {
         return showToast(data.mensaje ?? "Error al actualizar", false)
       }
       actualizarPerfil({ nombre: form.nombre, apellido: form.apellido, email: form.email })
-      setForm(f => ({ ...f, password: "", passwordConf: "" }))
+      setForm(f => ({ ...f, password: "", passwordConf: "", passwordActual: "" }))
       setEditando(false)
       showToast("Perfil actualizado correctamente")
     } catch {
       actualizarPerfil({ nombre: form.nombre, apellido: form.apellido, email: form.email })
-      setForm(f => ({ ...f, password: "", passwordConf: "" }))
+      setForm(f => ({ ...f, password: "", passwordConf: "", passwordActual: "" }))
       setEditando(false)
       showToast("Perfil actualizado")
     } finally {
@@ -174,25 +185,25 @@ const Perfil = () => {
         <div className="grid grid-cols-3 gap-3">
           {[
             {
-              label:    "Lugares propuestos",
-              valor:    usuario.lugaresPublicados ?? 0,
-              icon:     "location_on",
-              iconBg:   "bg-[#1c16cd]/10",
-              iconColor:"text-[#1c16cd]",
+              label: "Lugares propuestos",
+              valor: usuario.lugaresPublicados ?? 0,
+              icon: "location_on",
+              iconBg: "bg-[#1c16cd]/10",
+              iconColor: "text-[#1c16cd]",
             },
             {
-              label:    "Reseñas escritas",
-              valor:    usuario.reseñas ?? 0,
-              icon:     "rate_review",
-              iconBg:   "bg-[#ff8c2a]/10",
-              iconColor:"text-[#ff8c2a]",
+              label: "Reseñas escritas",
+              valor: usuario.reseñas ?? 0,
+              icon: "rate_review",
+              iconBg: "bg-[#ff8c2a]/10",
+              iconColor: "text-[#ff8c2a]",
             },
             {
-              label:    "Rol de cuenta",
-              valor:    rol.label,
-              icon:     rol.icon,
-              iconBg:   "bg-slate-100",
-              iconColor:"text-slate-500",
+              label: "Rol de cuenta",
+              valor: rol.label,
+              icon: rol.icon,
+              iconBg: "bg-slate-100",
+              iconColor: "text-slate-500",
             },
           ].map(({ label, valor, icon, iconBg, iconColor }) => (
             <div key={label} className="bg-white border-2 border-slate-100 rounded-2xl p-5 flex flex-col gap-4">
@@ -238,9 +249,24 @@ const Perfil = () => {
                 </div>
 
                 {/* Email */}
-                <Field label="Correo electrónico" icon="mail">
-                  <input type="email" value={form.email} onChange={set("email")} placeholder="tu@email.com" className={inputText} />
+                <Field  className= "opacity-100" label="Correo electrónico" icon="mail">
+                  <input type="email" value={form.email} disabled className={`${inputText} cursor-not-allowed text-slate-500 bg-slate-50 opacity-50`} />
                 </Field>
+                {/* Contraseña actual — solo aparece si se quiere cambiar la contraseña */}
+                {form.password && (
+                  <Field label="Contraseña actual" icon="lock_open">
+                    <input
+                      type={showActual ? "text" : "password"}
+                      value={form.passwordActual}
+                      onChange={set("passwordActual")}
+                      placeholder="Tu contraseña actual"
+                      className={inputText}
+                    />
+                    <button type="button" onClick={() => setShowActual(v => !v)} className="text-slate-300 hover:text-slate-500 transition-colors shrink-0">
+                      {showActual ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </Field>
+                )}
 
                 {/* Divisor contraseña */}
                 <div className="flex items-center gap-3 pt-1">
@@ -301,10 +327,10 @@ const Perfil = () => {
               /* Solo lectura */
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
-                  { label: "Nombre",            valor: usuario.nombre,   icon: "person"         },
-                  { label: "Apellido",           valor: usuario.apellido, icon: "person"         },
-                  { label: "Correo electrónico", valor: usuario.email,    icon: "mail"           },
-                  { label: "Miembro desde",      valor: fechaStr,         icon: "calendar_today" },
+                  { label: "Nombre", valor: usuario.nombre, icon: "person" },
+                  { label: "Apellido", valor: usuario.apellido, icon: "person" },
+                  { label: "Correo electrónico", valor: usuario.email, icon: "mail" },
+                  { label: "Miembro desde", valor: fechaStr, icon: "calendar_today" },
                 ].map(({ label, valor, icon }) => (
                   <div key={label} className="bg-slate-50 rounded-xl px-4 py-3.5 flex items-center gap-3">
                     <span className="material-symbols-rounded text-slate-300 shrink-0" style={{ fontSize: "17px" }}>{icon}</span>
