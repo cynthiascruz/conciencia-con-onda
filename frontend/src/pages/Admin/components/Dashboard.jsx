@@ -1,4 +1,4 @@
-import { kpis, lugaresPendientes, usuarios } from "../../../data/admin"
+// import { kpis, lugaresPendientes, usuarios } from "../../../data/admin"
 import { Icon } from "../constants"
 
 const formatFecha = (iso) =>
@@ -69,12 +69,12 @@ const UserItem = ({ usuario }) => {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-const Dashboard = ({ setSeccion, pendientesCount, reseñasPendientesCount = 0 }) => {
+const Dashboard = ({ setSeccion, pendientesCount, reseñasPendientesCount = 0, usuarios=[], pendientes=[], lugaresAprobados= 0 }) => {
   const recentUsers    = [...usuarios]
     .sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro))
     .slice(0, 5)
 
-  const recentPending  = lugaresPendientes.slice(0, 4)
+  const recentPending  = pendientes.slice(0, 4)
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -102,8 +102,8 @@ const Dashboard = ({ setSeccion, pendientesCount, reseñasPendientesCount = 0 })
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
         <KpiCard valor={pendientesCount}       label="Lugares pendientes"  icon="pending_actions" color="bg-[#ff8c2a]/90" onClick={() => setSeccion("pendientes")} />
-        <KpiCard valor={kpis.lugaresAprobados} label="Lugares aprobados"   icon="verified"        color="bg-[#13da28]/90" onClick={() => setSeccion("lugares")}    />
-        <KpiCard valor={kpis.usuariosTotal}    label="Usuarios registrados" icon="group"           color="bg-[#1c16cd]/90" onClick={() => setSeccion("usuarios")}   />
+        <KpiCard valor={lugaresAprobados} label="Lugares aprobados"   icon="verified"        color="bg-[#13da28]/90" onClick={() => setSeccion("lugares")}    />
+        <KpiCard valor={usuarios.length}    label="Usuarios registrados" icon="group"           color="bg-[#1c16cd]/90" onClick={() => setSeccion("usuarios")}   />
         <KpiCard valor={reseñasPendientesCount} label="Reseñas pendientes IA" icon="rate_review" color="bg-[#7b1fa2]/90" onClick={() => setSeccion("reseñas")} />
       </div>
 

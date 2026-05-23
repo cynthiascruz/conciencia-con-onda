@@ -11,6 +11,10 @@ export const resenasService = {
   listarAdminPorLugar: (lugarId) =>
     api(`/api/resenas/${lugarId}/admin`),
 
+  
+  listarTodasResenas:() =>
+    api(`/api/resenas`),
+
   // Usuario autenticado — crear reseña
   crear: (id_lugar, tipo, descripcion) =>
     api('/api/resenas', {
