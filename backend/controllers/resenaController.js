@@ -212,6 +212,29 @@ export const cambiarEstadoResena = async (req, res, next) => {
     }
 };
 
+/*
+    Listar todas las reseñas — solo Admin
+    Método: GET
+    Ruta: /api/resenas
+    Acceso: Admin
+*/
+export const listarTodasResenas = async (req, res, next) => {
+    try {
+        const resenas = await Resena.find()
+            .populate('id_autor', 'nombre apellido')
+            .populate('id_lugar',  'nombre')
+            .sort({ fecha_Resena: -1 });
+
+        logger.info('Listado admin de todas las reseñas', {
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
+
+        return res.status(200).json(resenas);
+    } catch (error) {
+        next(error);
+    }
+};
+
 /*    
     Listar resenas del usuario autenticado
     Metodo: GET

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
     listarResenas,
     listarResenasAdmin,
+    listarTodasResenas,
     crearResena,
     cambiarEstadoResena,
     //misResenas,
@@ -22,6 +23,10 @@ router.get('/:lugarId/admin', protegerRuta, soloAdmin, listarResenasAdmin);
 
 // Solo Admin - Cambiar estado de reseña
 router.patch('/:id/estado', protegerRuta, soloAdmin, cambiarEstadoResena);
+
+// Solo Admin - Listar todas las reseñas
+router.get('/', protegerRuta, soloAdmin, listarTodasResenas);
+
 
 // Ver reseñas de un usuario (Posible feature futura)
 //router.get('/mis-resenas', protegerRuta, misResenas);
