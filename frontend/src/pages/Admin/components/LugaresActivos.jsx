@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react"
-import { lugaresAprobados as initialAprobados } from "../../../data/admin"
-import { reseñas as initialReseñas } from "../../../data/lugares"
+// import { lugaresAprobados as initialAprobados } from "../../../data/admin"
+// import { reseñas as initialReseñas } from "../../../data/lugares"
 import { Icon, CATEGORIAS, CATEGORIA_COLORS, TAGS_ACCESIBILIDAD } from "../constants"
 
 const LugarActivoModal = ({ lugar, onClose, onGuardar, onToggleActivo, reseñasDelLugar = [], onBorrarReseña }) => {
-  const [tab, setTab]   = useState("editar")
+  const [tab, setTab] = useState("editar")
   const [form, setForm] = useState({
-    nombre:          lugar.nombre,
-    direccion:       lugar.direccion,
-    descripcion:     lugar.descripcion,
-    categoria:       lugar.categoria,
-    imagen:          lugar.imagen,
+    nombre: lugar.nombre,
+    direccion: lugar.direccion,
+    descripcion: lugar.descripcion,
+    categoria: lugar.categoria,
+    imagen: lugar.imagen,
     horarioResumido: lugar.horarioResumido ?? "",
-    sitioWeb:        lugar.sitioWeb ?? "",
-    accesibilidad:   [...lugar.accesibilidad],
+    sitioWeb: lugar.sitioWeb ?? "",
+    accesibilidad: [...lugar.accesibilidad],
   })
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const LugarActivoModal = ({ lugar, onClose, onGuardar, onToggleActivo, reseñasD
         {/* Tabs */}
         <div className="flex border-b border-slate-100 shrink-0">
           {[
-            { key: "editar",  label: "Editar",  icon: "edit"         },
+            { key: "editar", label: "Editar", icon: "edit" },
             { key: "reseñas", label: `Reseñas${reseñasDelLugar.length > 0 ? ` (${reseñasDelLugar.length})` : ""}`, icon: "chat_bubble" },
           ].map(t => (
             <button
@@ -245,20 +245,20 @@ const LugarActivoModal = ({ lugar, onClose, onGuardar, onToggleActivo, reseñasD
   )
 }
 
-const LugaresActivos = () => {
-  const [lugares, setLugares]     = useState(initialAprobados)
-  const [reseñas, setReseñas]     = useState(initialReseñas)
+const LugaresActivos = ({lugares = [], resenas = [], onGuardar, onToggleActivo, onCambiarEstadoResena}) => {
+  // const [lugares, setLugares]     = useState(initialAprobados)
+  // const [reseñas, setReseñas]     = useState(initialReseñas)
   const [lugarEditando, setLugar] = useState(null)
-  const [query, setQuery]         = useState("")
+  const [query, setQuery] = useState("")
   const [filtroActivo, setFiltro] = useState("todos") // "todos" | "activos" | "inactivos"
 
-  const guardar      = (actualizado) => setLugares(ls => ls.map(l => l._id === actualizado._id ? actualizado : l))
-  const toggleActivo = (id)          => setLugares(ls => ls.map(l => l._id === id ? { ...l, activo: !l.activo } : l))
-  const borrarReseña = (id)          => setReseñas(rs => rs.filter(r => r._id !== id))
+  // const guardar      = (actualizado) => setLugares(ls => ls.map(l => l._id === actualizado._id ? actualizado : l))
+  // const toggleActivo = (id)          => setLugares(ls => ls.map(l => l._id === id ? { ...l, activo: !l.activo } : l))
+  // const borrarReseña = (id)          => setReseñas(rs => rs.filter(r => r._id !== id))
 
   const filtrados = lugares.filter(l => {
-    const q   = query.toLowerCase()
-    const ok  = l.nombre.toLowerCase().includes(q) || l.categoria.toLowerCase().includes(q) || l.direccion.toLowerCase().includes(q)
+    const q = query.toLowerCase()
+    const ok = l.nombre.toLowerCase().includes(q) || l.categoria.toLowerCase().includes(q) || l.direccion.toLowerCase().includes(q)
     const est = filtroActivo === "todos" ? true : filtroActivo === "activos" ? l.activo : !l.activo
     return ok && est
   })
@@ -284,8 +284,8 @@ const LugaresActivos = () => {
 
         <div className="flex items-center gap-2 bg-white border-2 border-slate-200 rounded-2xl px-3 py-1.5">
           {[
-            { key: "todos",     label: "Todos"     },
-            { key: "activos",   label: "Activos"   },
+            { key: "todos", label: "Todos" },
+            { key: "activos", label: "Activos" },
             { key: "inactivos", label: "Inactivos" },
           ].map(({ key, label }) => (
             <button key={key} onClick={() => setFiltro(key)}
@@ -361,10 +361,10 @@ const LugaresActivos = () => {
         <LugarActivoModal
           lugar={lugarEditando}
           onClose={() => setLugar(null)}
-          onGuardar={guardar}
-          onToggleActivo={toggleActivo}
-          reseñasDelLugar={reseñas.filter(r => r.lugarId === lugarEditando._id)}
-          onBorrarReseña={borrarReseña}
+          onGuardar={onGuardar}
+          onToggleActivo={onToggleActivo}
+          reseñasDelLugar={resenas.filter(r => r.lugarId === lugarEditando._id)}
+          onBorrarReseña={(id) => onCambiarEstadoResena(id, 'Eliminada')}
         />
       )}
     </div>

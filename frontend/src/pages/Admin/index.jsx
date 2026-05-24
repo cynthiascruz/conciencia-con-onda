@@ -60,6 +60,7 @@ const adaptarLugarAdmin = (lugar) => ({
 
 const adaptarResenaAdmin = (r) => ({
   _id: r._id,
+  lugarId: r.id_lugar?._id ?? null,
   usuarioNombre: `${r.id_autor?.nombre ?? ''} ${r.id_autor?.apellido ?? ''}`.trim(),
   usuarioIniciales: `${r.id_autor?.nombre?.[0] ?? ''}${r.id_autor?.apellido?.[0] ?? ''}`.toUpperCase(),
   texto: r.descripcion,
@@ -245,6 +246,7 @@ const handleGuardarUsuario = async (actualizado) => {
             resenas={resenas}
             onGuardar={handleGuardarLugar}
             onToggleActivo={handleToggleActivoLugar}
+            onCambiarEstadoResena={handleCambiarEstadoResena}
           />
         )}
 
