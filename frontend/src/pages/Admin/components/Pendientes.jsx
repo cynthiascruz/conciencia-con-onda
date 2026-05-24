@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { lugaresPendientes as initialPendientes } from "../../../data/admin"
+// import { lugaresPendientes as initialPendientes } from "../../../data/admin"
 import { Icon, CATEGORIAS, CATEGORIA_COLORS, TAGS_ACCESIBILIDAD } from "../constants"
 
 const LugarModal = ({ lugar, onClose, onAprobar, onRechazar }) => {
@@ -299,11 +299,11 @@ const LugarModal = ({ lugar, onClose, onAprobar, onRechazar }) => {
   )
 }
 
-const Pendientes = ({ onCountChange }) => {
-  const [pendientes, setPendientes] = useState(initialPendientes)
+const Pendientes = ({ pendientes = [], onAprobar, onRechazar }) => {
+  // const [pendientes, setPendientes] = useState(initialPendientes)
   const [lugarVisto, setLugarVisto] = useState(null)
 
-  const aprobar = (lugar) => {
+  /*const aprobar = (lugar) => {
     const next = pendientes.filter(l => l._id !== lugar._id)
     setPendientes(next)
     onCountChange(next.length)
@@ -312,7 +312,7 @@ const Pendientes = ({ onCountChange }) => {
     const next = pendientes.filter(l => l._id !== id)
     setPendientes(next)
     onCountChange(next.length)
-  }
+  }*/
 
   return (
     <div className="w-full">
@@ -371,8 +371,8 @@ const Pendientes = ({ onCountChange }) => {
         <LugarModal
           lugar={lugarVisto}
           onClose={() => setLugarVisto(null)}
-          onAprobar={aprobar}
-          onRechazar={rechazar}
+          onAprobar={onAprobar}
+          onRechazar={onRechazar}
         />
       )}
     </div>
