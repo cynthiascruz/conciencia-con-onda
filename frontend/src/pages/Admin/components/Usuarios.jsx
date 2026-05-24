@@ -30,9 +30,12 @@ const SORT_OPTIONS = [
 const PER_PAGE = 10
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const formatFecha = (iso) =>
-  new Date(iso).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
-
+const formatFecha = (iso) => {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+}
 // ─── Sub-componente memoizado para botón de rol ──────────────────────────────
 const RolButton = memo(({ value, label, icon, active, onSelect }) => (
   <button

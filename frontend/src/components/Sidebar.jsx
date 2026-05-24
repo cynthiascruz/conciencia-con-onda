@@ -146,7 +146,7 @@ const Sidebar = ({ filtros, categorias = [], onCategoriaChange, onAccesibilidadC
 
         <div className="border-t border-slate-100 mb-6" />
 
-        {/* Solo verificados */}
+        {/* Solo verificados 
         <div className="flex items-center justify-between">
           <div>
             <p className="font-bold text-sm text-slate-700">Solo verificados</p>
@@ -161,7 +161,7 @@ const Sidebar = ({ filtros, categorias = [], onCategoriaChange, onAccesibilidadC
               ${filtros.soloVerificados ? "translate-x-5" : "translate-x-0"}`}
             />
           </button>
-        </div>
+        </div>*/}
 
       </div>
     </aside>

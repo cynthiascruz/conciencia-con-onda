@@ -38,7 +38,7 @@ const PendingItem = ({ lugar, onRevisar }) => (
     <div className="flex-1 min-w-0">
       <p className="font-semibold text-slate-800 text-sm truncate">{lugar.nombre}</p>
       <p className="text-slate-400 text-xs mt-0.5">
-        {lugar.solicitadoPor} · {formatFecha(lugar.fechaSolicitud)}
+        {lugar.solicitadoPor} · {lugar.fechaSolicitud}
       </p>
     </div>
     <button
@@ -104,7 +104,7 @@ const Dashboard = ({ setSeccion, pendientesCount, reseñasPendientesCount = 0, u
         <KpiCard valor={pendientesCount}       label="Lugares pendientes"  icon="pending_actions" color="bg-[#ff8c2a]/90" onClick={() => setSeccion("pendientes")} />
         <KpiCard valor={lugaresAprobados} label="Lugares aprobados"   icon="verified"        color="bg-[#13da28]/90" onClick={() => setSeccion("lugares")}    />
         <KpiCard valor={usuarios.length}    label="Usuarios registrados" icon="group"           color="bg-[#1c16cd]/90" onClick={() => setSeccion("usuarios")}   />
-        <KpiCard valor={reseñasPendientesCount} label="Reseñas pendientes IA" icon="rate_review" color="bg-[#7b1fa2]/90" onClick={() => setSeccion("reseñas")} />
+        <KpiCard valor={reseñasPendientesCount} label="Reseñas pendientes" icon="rate_review" color="bg-[#7b1fa2]/90" onClick={() => setSeccion("reseñas")} />
       </div>
 
       {/* ── Dos columnas ── */}

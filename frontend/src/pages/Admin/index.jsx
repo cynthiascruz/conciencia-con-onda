@@ -17,6 +17,8 @@ import Usuarios from "./components/Usuarios"
 //Adaptadores para conectar con el backend
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const cap = (str) => str.charAt(0).toUpperCase() + str.slice(1)
+const fechaDeId = (id) =>
+  new Date(parseInt(String(id).substring(0, 8), 16) * 1000)
 
 const COLORES_AVATAR = [
   'bg-purple-500', 'bg-[#1c16cd]', 'bg-[#0097a7]', 'bg-[#d32f2f]',
@@ -25,16 +27,16 @@ const COLORES_AVATAR = [
 
 // ─── Adaptadores ──────────────────────────────────────────────────────────────
 const adaptarUsuario = (u, i) => ({
-  _id:            u._id,
-  nombre:         u.nombre,
-  apellido:       u.apellido,
+  _id: u._id,
+  nombre: u.nombre,
+  apellido: u.apellido,
   nombreCompleto: `${u.nombre} ${u.apellido}`.trim(),
-  email:          u.email,
-  rol:            u.rol.toLowerCase(),
-  estado:         u.estado.toLowerCase(),
-  iniciales:      `${u.nombre?.[0] ?? ''}${u.apellido?.[0] ?? ''}`.toUpperCase(),
-  color:          COLORES_AVATAR[i % COLORES_AVATAR.length],
-  fechaRegistro:  u.createdAt ?? u.fechaRegistro,
+  email: u.email,
+  rol: u.rol.toLowerCase(),
+  estado: u.estado.toLowerCase(),
+  iniciales: `${u.nombre?.[0] ?? ''}${u.apellido?.[0] ?? ''}`.toUpperCase(),
+  color: COLORES_AVATAR[i % COLORES_AVATAR.length],
+  fechaRegistro: u.fechaRegistro ?? u.createdAt ?? fechaDeId(u._id),
 })
 
 const adaptarLugarAdmin = (lugar) => ({
@@ -52,9 +54,8 @@ const adaptarLugarAdmin = (lugar) => ({
   activo: lugar.estado === 'Aprobado',
   verificado: lugar.estado === 'Aprobado',
   solicitadoPor: `${lugar.creadoPor_id?.nombre ?? ''} ${lugar.creadoPor_id?.apellido ?? ''}`.trim(),
-  fechaSolicitud: lugar.createdAt
-    ? new Date(lugar.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })
-    : '—',
+  fechaSolicitud: new Date(lugar.createdAt ?? fechaDeId(lugar._id))
+    .toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }),
   reseñasCount: { positivas: 0, negativas: 0 },
 })
 
@@ -111,34 +112,34 @@ const Admin = () => {
   const reseñasPendientesCount = useMemo(() => resenas.filter(r => r.estado === 'Pendiente').length, [resenas])
 
   // ── Callbacks — Usuarios ───────────────────────────────────────────────────
-const handleGuardarUsuario = async (actualizado) => {
-  const original = usuarios.find(u => u._id === actualizado._id)
+  const handleGuardarUsuario = async (actualizado) => {
+    const original = usuarios.find(u => u._id === actualizado._id)
 
-  // Actualiza datos personales si hubo cambios
-  const hayCambiosDatos =
-    actualizado.nombre   !== original.nombre   ||
-    actualizado.apellido !== original.apellido ||
-    actualizado.password
+    // Actualiza datos personales si hubo cambios
+    const hayCambiosDatos =
+      actualizado.nombre !== original.nombre ||
+      actualizado.apellido !== original.apellido ||
+      actualizado.password
 
-  if (hayCambiosDatos) {
-    const payload = {}
-    if (actualizado.nombre   !== original.nombre)   payload.nombre   = actualizado.nombre
-    if (actualizado.apellido !== original.apellido) payload.apellido = actualizado.apellido
-    if (actualizado.password) payload.password = actualizado.password
-    await usuariosService.actualizarDatos(actualizado._id, payload)
+    if (hayCambiosDatos) {
+      const payload = {}
+      if (actualizado.nombre !== original.nombre) payload.nombre = actualizado.nombre
+      if (actualizado.apellido !== original.apellido) payload.apellido = actualizado.apellido
+      if (actualizado.password) payload.password = actualizado.password
+      await usuariosService.actualizarDatos(actualizado._id, payload)
+    }
+
+    // Actualiza rol si cambió
+    if (original.rol !== actualizado.rol) {
+      await usuariosService.cambiarRol(actualizado._id, cap(actualizado.rol))
+    }
+
+    setUsuarios(us => us.map(u =>
+      u._id === actualizado._id
+        ? { ...u, ...actualizado, nombreCompleto: `${actualizado.nombre} ${actualizado.apellido}`.trim() }
+        : u
+    ))
   }
-
-  // Actualiza rol si cambió
-  if (original.rol !== actualizado.rol) {
-    await usuariosService.cambiarRol(actualizado._id, cap(actualizado.rol))
-  }
-
-  setUsuarios(us => us.map(u =>
-    u._id === actualizado._id
-      ? { ...u, ...actualizado, nombreCompleto: `${actualizado.nombre} ${actualizado.apellido}`.trim() }
-      : u
-  ))
-}
 
   const handleToggleEstadoUsuario = async (id) => {
     const u = usuarios.find(u => u._id === id)

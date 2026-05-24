@@ -132,7 +132,6 @@ const Reseñas = ({ resenas: reseñas = [], onCambiarEstado }) => {
   const stats = useMemo(() => [
     { label: "Total",         valor: reseñas.length,                                          color: "text-slate-700"  },
     { label: "Publicadas",    valor: reseñas.filter(r => r.estado === "Publicada").length,    color: "text-[#0a8a1a]"  },
-    { label: "Pendientes IA", valor: reseñas.filter(r => r.estado === "Pendiente").length,    color: "text-[#ff8c2a]"  },
     { label: "Eliminadas",    valor: reseñas.filter(r => r.estado === "Eliminada").length,    color: "text-[#d32f2f]"  },
   ], [reseñas])
 
@@ -175,7 +174,7 @@ const Reseñas = ({ resenas: reseñas = [], onCambiarEstado }) => {
         <div>
           <h2 className="font-extrabold text-2xl text-[#171717] mb-0.5">Moderación de Reseñas</h2>
           <p className="text-slate-400 text-sm">
-            La IA analiza el contenido automáticamente; revisa las marcadas como{" "}
+            Verifique las reseñas marcadas como: {" "}
             <span className="text-[#ff8c2a] font-semibold">Pendiente</span>
           </p>
         </div>

@@ -363,7 +363,7 @@ const LugaresActivos = ({lugares = [], resenas = [], onGuardar, onToggleActivo, 
           onClose={() => setLugar(null)}
           onGuardar={onGuardar}
           onToggleActivo={onToggleActivo}
-          reseñasDelLugar={resenas.filter(r => r.lugarId === lugarEditando._id)}
+          reseñasDelLugar={resenas.filter(r => r.lugarId === lugarEditando._id && r.estado !== 'Eliminada')}
           onBorrarReseña={(id) => onCambiarEstadoResena(id, 'Eliminada')}
         />
       )}

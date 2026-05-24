@@ -111,6 +111,8 @@ export const login = async (req, res) => {
                 apellido: usuario.apellido,
                 email: usuario.email,
                 rol: usuario.rol,
+                fechaRegistro: usuario.fecha_Registro
+                    ?? new Date(parseInt(String(usuario._id).substring(0, 8), 16) * 1000),
             },
         })
 

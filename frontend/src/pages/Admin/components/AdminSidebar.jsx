@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../../../context/AuthContext"
 import logo from "../../../assets/logotipo.svg"
 import { Icon, navItems } from "../constants"
 
 const AdminSidebar = ({ seccion, setSeccion, onLogout, pendientesCount, reseñasPendientesCount }) => {
   const navigate = useNavigate()
+  const { usuario } = useAuth()
 
   return (
     <aside className="w-56 shrink-0 bg-[#1c16cd]/90 min-h-screen flex flex-col">
@@ -51,11 +53,13 @@ const AdminSidebar = ({ seccion, setSeccion, onLogout, pendientesCount, reseñas
         <div className="bg-white/10 rounded-2xl px-3 py-3 mb-1">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-[#13da28] flex items-center justify-center font-bold text-white text-sm shrink-0">
-              A
+              {usuario?.nombre?.[0]?.toUpperCase() ?? 'A'}
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-white text-sm leading-tight truncate">Admin CCO</p>
-              <p className="text-white/50 text-[11px] truncate">admin@cco.mx</p>
+              <p className="font-bold text-white text-sm leading-tight truncate">
+                {usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Admin'}
+              </p>
+              <p className="text-white/50 text-[11px] truncate">{usuario?.email}</p>
             </div>
           </div>
         </div>
