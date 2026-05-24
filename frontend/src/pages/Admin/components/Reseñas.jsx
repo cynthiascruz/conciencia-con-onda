@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, memo } from "react"
-import { reseñas as reseñasIniciales } from "../../../data/lugares"
+// import { reseñas as reseñasIniciales } from "../../../data/lugares"
 import { Icon } from "../constants"
 
 const PER_PAGE = 10
@@ -120,8 +120,8 @@ const ReseñaRow = memo(({ r, onCambiar }) => {
 ReseñaRow.displayName = "ReseñaRow"
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-const Reseñas = ({ onPendingCountChange }) => {
-  const [reseñas, setReseñas]               = useState(reseñasIniciales)
+const Reseñas = ({ resenas: reseñas = [], onCambiarEstado }) => {
+  // const [reseñas, setReseñas]               = useState(reseñasIniciales)
   const [search, setSearch]                 = useState("")
   const [filtroEstado, setFiltroEstado]     = useState("Todas")
   const [filtroTipo, setFiltroTipo]         = useState("todos")
@@ -157,13 +157,13 @@ const Reseñas = ({ onPendingCountChange }) => {
   const desde        = filtradas.length === 0 ? 0 : (paginaActual - 1) * PER_PAGE + 1
   const hasta        = Math.min(paginaActual * PER_PAGE, filtradas.length)
 
-  const cambiarEstado = useCallback((id, nuevoEstado) => {
+  /* const cambiarEstado = useCallback((id, nuevoEstado) => {
     setReseñas(prev => {
       const updated = prev.map(r => r._id === id ? { ...r, estado: nuevoEstado } : r)
       onPendingCountChange?.(updated.filter(r => r.estado === "Pendiente").length)
       return updated
     })
-  }, [onPendingCountChange])
+  }, [onPendingCountChange]) */
 
   const limpiarFiltros      = useCallback(() => { setFiltroEstado("Todas"); setFiltroTipo("todos"); setPagina(1) }, [])
   const hayFiltrosActivos   = filtroEstado !== "Todas" || filtroTipo !== "todos"
@@ -330,7 +330,7 @@ const Reseñas = ({ onPendingCountChange }) => {
                 </tr>
               ) : (
                 paginados.map(r => (
-                  <ReseñaRow key={r._id} r={r} onCambiar={cambiarEstado} />
+                  <ReseñaRow key={r._id} r={r} onCambiar={onCambiarEstado} />
                 ))
               )}
             </tbody>

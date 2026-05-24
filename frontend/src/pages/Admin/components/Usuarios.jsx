@@ -283,10 +283,10 @@ const Usuarios = ({ usuarios = [], rolActual = 'admin', onGuardar, onToggleEstad
           <h2 className="font-extrabold text-2xl text-[#171717] mb-0.5">Gestión de Usuarios</h2>
           <p className="text-slate-400 text-sm">Administra usuarios, roles y permisos de la plataforma</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#1c16cd] hover:bg-[#1510a0] active:scale-[0.98] text-white font-bold text-sm px-5 py-2.5 rounded-2xl transition-all shadow-sm shadow-[#1c16cd]/30">
+        {/*<button className="flex items-center gap-2 bg-[#1c16cd] hover:bg-[#1510a0] active:scale-[0.98] text-white font-bold text-sm px-5 py-2.5 rounded-2xl transition-all shadow-sm shadow-[#1c16cd]/30">
           <Icon name="person_add" size={17} />
           Agregar Admin
-        </button>
+        </button>*/}
       </div>
 
       {/* ── Stats ── */}
