@@ -25,14 +25,16 @@ const COLORES_AVATAR = [
 
 // ─── Adaptadores ──────────────────────────────────────────────────────────────
 const adaptarUsuario = (u, i) => ({
-  _id: u._id,
-  nombre: `${u.nombre} ${u.apellido}`.trim(),
-  email: u.email,
-  rol: u.rol.toLowerCase(),
-  estado: u.estado.toLowerCase(),
-  iniciales: `${u.nombre?.[0] ?? ''}${u.apellido?.[0] ?? ''}`.toUpperCase(),
-  color: COLORES_AVATAR[i % COLORES_AVATAR.length],
-  fechaRegistro: u.createdAt ?? u.fechaRegistro,
+  _id:            u._id,
+  nombre:         u.nombre,
+  apellido:       u.apellido,
+  nombreCompleto: `${u.nombre} ${u.apellido}`.trim(),
+  email:          u.email,
+  rol:            u.rol.toLowerCase(),
+  estado:         u.estado.toLowerCase(),
+  iniciales:      `${u.nombre?.[0] ?? ''}${u.apellido?.[0] ?? ''}`.toUpperCase(),
+  color:          COLORES_AVATAR[i % COLORES_AVATAR.length],
+  fechaRegistro:  u.createdAt ?? u.fechaRegistro,
 })
 
 const adaptarLugarAdmin = (lugar) => ({
@@ -70,15 +72,15 @@ const adaptarResenaAdmin = (r) => ({
 })
 
 const Admin = () => {
-  const navigate     = useNavigate()
-  const { logout }   = useAuth()
+  const navigate = useNavigate()
+  const { logout, usuario: usuarioActual } = useAuth()
 
   // ── Datos ─────────────────────────────────────────────────────────────────
   const [usuarios, setUsuarios] = useState([])
-  const [lugares,  setLugares]  = useState([])
-  const [resenas,  setResenas]  = useState([])
+  const [lugares, setLugares] = useState([])
+  const [resenas, setResenas] = useState([])
   const [cargando, setCargando] = useState(true)
-  const [seccion,  setSeccion]  = useState("dashboard")
+  const [seccion, setSeccion] = useState("dashboard")
 
   // ── Carga inicial en paralelo ──────────────────────────────────────────────
   useEffect(() => {
@@ -102,22 +104,43 @@ const Admin = () => {
   }, [])
 
   // ── Datos derivados ────────────────────────────────────────────────────────
-  const pendientes             = useMemo(() => lugares.filter(l => l.estado === 'Pendiente'), [lugares])
-  const aprobados              = useMemo(() => lugares.filter(l => l.estado === 'Aprobado' || l.estado === 'Inactivo'), [lugares])
-  const pendientesCount        = pendientes.length
+  const pendientes = useMemo(() => lugares.filter(l => l.estado === 'Pendiente'), [lugares])
+  const aprobados = useMemo(() => lugares.filter(l => l.estado === 'Aprobado' || l.estado === 'Inactivo'), [lugares])
+  const pendientesCount = pendientes.length
   const reseñasPendientesCount = useMemo(() => resenas.filter(r => r.estado === 'Pendiente').length, [resenas])
 
   // ── Callbacks — Usuarios ───────────────────────────────────────────────────
-  const handleGuardarUsuario = async (actualizado) => {
-    const original = usuarios.find(u => u._id === actualizado._id)
-    if (original.rol !== actualizado.rol) {
-      await usuariosService.cambiarRol(actualizado._id, cap(actualizado.rol))
-    }
-    setUsuarios(us => us.map(u => u._id === actualizado._id ? { ...u, ...actualizado } : u))
+const handleGuardarUsuario = async (actualizado) => {
+  const original = usuarios.find(u => u._id === actualizado._id)
+
+  // Actualiza datos personales si hubo cambios
+  const hayCambiosDatos =
+    actualizado.nombre   !== original.nombre   ||
+    actualizado.apellido !== original.apellido ||
+    actualizado.password
+
+  if (hayCambiosDatos) {
+    const payload = {}
+    if (actualizado.nombre   !== original.nombre)   payload.nombre   = actualizado.nombre
+    if (actualizado.apellido !== original.apellido) payload.apellido = actualizado.apellido
+    if (actualizado.password) payload.password = actualizado.password
+    await usuariosService.actualizarDatos(actualizado._id, payload)
   }
 
+  // Actualiza rol si cambió
+  if (original.rol !== actualizado.rol) {
+    await usuariosService.cambiarRol(actualizado._id, cap(actualizado.rol))
+  }
+
+  setUsuarios(us => us.map(u =>
+    u._id === actualizado._id
+      ? { ...u, ...actualizado, nombreCompleto: `${actualizado.nombre} ${actualizado.apellido}`.trim() }
+      : u
+  ))
+}
+
   const handleToggleEstadoUsuario = async (id) => {
-    const u          = usuarios.find(u => u._id === id)
+    const u = usuarios.find(u => u._id === id)
     const nuevoEstado = u.estado === 'activo' ? 'Suspendido' : 'Activo'
     await usuariosService.cambiarEstado(id, nuevoEstado)
     setUsuarios(us => us.map(u => u._id === id ? { ...u, estado: nuevoEstado.toLowerCase() } : u))
@@ -126,12 +149,12 @@ const Admin = () => {
   // ── Callbacks — Pendientes ─────────────────────────────────────────────────
   const handleAprobar = async (lugarEditado) => {
     await lugaresService.editar(lugarEditado._id, {
-      nombre:                        lugarEditado.nombre,
-      direccion:                     lugarEditado.direccion,
-      descripcion:                   lugarEditado.descripcion,
-      horario:                       lugarEditado.horarioResumido,
-      url_img:                       lugarEditado.imagen,
-      url_sitioweb:                  lugarEditado.sitioWeb,
+      nombre: lugarEditado.nombre,
+      direccion: lugarEditado.direccion,
+      descripcion: lugarEditado.descripcion,
+      horario: lugarEditado.horarioResumido,
+      url_img: lugarEditado.imagen,
+      url_sitioweb: lugarEditado.sitioWeb,
       caracteristicas_accesibilidad: lugarEditado.accesibilidad.map(a => a.toLowerCase()),
     })
     await lugaresService.cambiarEstado(lugarEditado._id, 'Aprobado')
@@ -148,19 +171,19 @@ const Admin = () => {
   // ── Callbacks — Lugares Activos ────────────────────────────────────────────
   const handleGuardarLugar = async (actualizado) => {
     await lugaresService.editar(actualizado._id, {
-      nombre:                        actualizado.nombre,
-      direccion:                     actualizado.direccion,
-      descripcion:                   actualizado.descripcion,
-      horario:                       actualizado.horarioResumido,
-      url_img:                       actualizado.imagen,
-      url_sitioweb:                  actualizado.sitioWeb,
+      nombre: actualizado.nombre,
+      direccion: actualizado.direccion,
+      descripcion: actualizado.descripcion,
+      horario: actualizado.horarioResumido,
+      url_img: actualizado.imagen,
+      url_sitioweb: actualizado.sitioWeb,
       caracteristicas_accesibilidad: actualizado.accesibilidad.map(a => a.toLowerCase()),
     })
     setLugares(ls => ls.map(l => l._id === actualizado._id ? { ...l, ...actualizado } : l))
   }
 
   const handleToggleActivoLugar = async (id) => {
-    const lugar      = aprobados.find(l => l._id === id)
+    const lugar = aprobados.find(l => l._id === id)
     const nuevoEstado = lugar.activo ? 'Inactivo' : 'Aprobado'
     await lugaresService.cambiarEstado(id, nuevoEstado)
     setLugares(ls => ls.map(l =>
@@ -235,6 +258,7 @@ const Admin = () => {
         {seccion === "usuarios" && (
           <Usuarios
             usuarios={usuarios}
+            rolActual={usuarioActual?.rol?.toLowerCase()}
             onGuardar={handleGuardarUsuario}
             onToggleEstado={handleToggleEstadoUsuario}
           />

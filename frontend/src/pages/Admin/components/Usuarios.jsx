@@ -1,30 +1,30 @@
 import { useState, useMemo, useCallback, memo } from "react"
-import { usuarios as initialUsuarios } from "../../../data/admin"
+// import { usuarios as initialUsuarios } from "../../../data/admin"
 import { Icon } from "../constants"
 
 // ─── Configuración de roles ───────────────────────────────────────────────────
 const ROLES = [
-  { value: "todos",       label: "Todos"              },
-  { value: "superadmin",  label: "Superadministrador" },
-  { value: "admin",       label: "Administrador"      },
-  { value: "usuario",     label: "Usuario"            },
+  { value: "todos", label: "Todos" },
+  { value: "superadmin", label: "Superadministrador" },
+  { value: "admin", label: "Administrador" },
+  { value: "usuario", label: "Usuario" },
 ]
 
 const rolBadge = {
-  superadmin: { label: "Superadmin",    icon: "admin_panel_settings", bg: "bg-purple-100",   text: "text-purple-700" },
-  admin:      { label: "Administrador", icon: "manage_accounts",      bg: "bg-[#1c16cd]/10", text: "text-[#1c16cd]"  },
-  usuario:    { label: "Usuario",       icon: "person",               bg: "bg-slate-100",    text: "text-slate-500"  },
+  superadmin: { label: "Superadmin", icon: "admin_panel_settings", bg: "bg-purple-100", text: "text-purple-700" },
+  admin: { label: "Administrador", icon: "manage_accounts", bg: "bg-[#1c16cd]/10", text: "text-[#1c16cd]" },
+  usuario: { label: "Usuario", icon: "person", bg: "bg-slate-100", text: "text-slate-500" },
 }
 
 const ESTADOS = [
-  { value: "todos",      label: "Todos"    },
-  { value: "activo",     label: "Activo"   },
+  { value: "todos", label: "Todos" },
+  { value: "activo", label: "Activo" },
   { value: "suspendido", label: "Inactivo" },
 ]
 
 const SORT_OPTIONS = [
-  { value: "fecha",  label: "Fecha de registro" },
-  { value: "nombre", label: "Nombre"            },
+  { value: "fecha", label: "Fecha de registro" },
+  { value: "nombre", label: "Nombre" },
 ]
 
 const PER_PAGE = 10
@@ -52,19 +52,19 @@ const inputClass = "w-full border-2 border-slate-200 focus:border-[#1c16cd]/70 r
 
 const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
   const [form, setForm] = useState({
-    nombre:   usuario.nombre,
-    email:    usuario.email,
+    nombre: usuario.nombre ?? "",
+    apellido: usuario.apellido ?? "",
     password: "",
-    rol:      usuario.rol,
+    rol: usuario.rol ?? "usuario",
   })
   const [showPassword, setShowPassword] = useState(false)
   const isSuperadmin = usuario.rol === "superadmin"
 
-  const setNombre   = useCallback(e => setForm(f => ({ ...f, nombre:   e.target.value })), [])
-  const setEmail    = useCallback(e => setForm(f => ({ ...f, email:    e.target.value })), [])
+  const setNombre = useCallback(e => setForm(f => ({ ...f, nombre: e.target.value })), [])
+  // const setEmail = useCallback(e => setForm(f => ({ ...f, email: e.target.value })), [])
   const setPassword = useCallback(e => setForm(f => ({ ...f, password: e.target.value })), [])
-  const togglePass  = useCallback(() => setShowPassword(v => !v), [])
-  const setRol      = useCallback(rol => setForm(f => ({ ...f, rol })), [])
+  const togglePass = useCallback(() => setShowPassword(v => !v), [])
+  const setRol = useCallback(rol => setForm(f => ({ ...f, rol })), [])
   const handleGuardar = useCallback(() => { onGuardar({ ...usuario, ...form }); onClose() }, [form, usuario, onGuardar, onClose])
 
   return (
@@ -78,7 +78,7 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
             {usuario.iniciales}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-white text-[15px] leading-tight truncate">{usuario.nombre}</p>
+            <p className="font-bold text-white text-[15px] leading-tight truncate">{usuario.nombreCompleto}</p>
             <p className="text-white/55 text-xs truncate mt-0.5">{usuario.email}</p>
           </div>
           <button
@@ -92,8 +92,8 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
         {/* Stats rápidas */}
         <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-100">
           {[
-            { label: "Rol",      valor: rolBadge[usuario.rol]?.label ?? "Usuario" },
-            { label: "Estado",   valor: usuario.estado === "activo" ? "Activo" : "Inactivo" },
+            { label: "Rol", valor: rolBadge[usuario.rol]?.label ?? "Usuario" },
+            { label: "Estado", valor: usuario.estado === "activo" ? "Activo" : "Inactivo" },
             { label: "Registro", valor: formatFecha(usuario.fechaRegistro) },
           ].map(({ label, valor }) => (
             <div key={label} className="flex flex-col items-center py-3.5 gap-0.5 border-r border-slate-200 last:border-0">
@@ -117,7 +117,7 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
             <>
               {/* Nombre */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Nombre completo</label>
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Nombre</label>
                 <input
                   value={form.nombre}
                   onChange={setNombre}
@@ -125,8 +125,18 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
                   className={inputClass}
                 />
               </div>
+              {/* Apellido — agrega este bloque nuevo */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Apellido</label>
+                <input
+                  value={form.apellido}
+                  onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))}
+                  className={inputClass}
+                  placeholder="Apellido"
+                />
+              </div>
 
-              {/* Email */}
+              {/* Email 
               <div>
                 <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Correo electrónico</label>
                 <input
@@ -137,6 +147,7 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
                   className={inputClass}
                 />
               </div>
+              */}
 
               {/* Contraseña */}
               <div>
@@ -167,8 +178,8 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
                 <label className="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-wider">Rol</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { value: "usuario", label: "Usuario",       icon: "person"          },
-                    { value: "admin",   label: "Administrador", icon: "manage_accounts" },
+                    { value: "usuario", label: "Usuario", icon: "person" },
+                    { value: "admin", label: "Administrador", icon: "manage_accounts" },
                   ].map(({ value, label, icon }) => (
                     <RolButton
                       key={value}
@@ -198,51 +209,45 @@ const UsuarioModal = memo(({ usuario, onClose, onGuardar }) => {
 })
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-const Usuarios = () => {
-  const [usuarios, setUsuarios]             = useState(initialUsuarios)
+const Usuarios = ({ usuarios = [], rolActual = 'admin', onGuardar, onToggleEstado }) => {
+  // const [usuarios, setUsuarios]             = useState(initialUsuarios)
   const [usuarioEditando, setUsuarioEditando] = useState(null)
-  const [query, setQuery]                   = useState("")
-  const [filtroRol, setFiltroRol]           = useState("todos")
-  const [filtroEstado, setFiltroEstado]     = useState("todos")
-  const [sortBy, setSortBy]                 = useState("fecha")
-  const [sortDir, setSortDir]               = useState("desc")
+  const [query, setQuery] = useState("")
+  const [filtroRol, setFiltroRol] = useState("todos")
+  const [filtroEstado, setFiltroEstado] = useState("todos")
+  const [sortBy, setSortBy] = useState("fecha")
+  const [sortDir, setSortDir] = useState("desc")
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
-  const [pagina, setPagina]                 = useState(1)
+  const [pagina, setPagina] = useState(1)
 
-  const toggleEstado   = useCallback((id) => {
-    setUsuarios(us => us.map(u =>
-      u._id === id ? { ...u, estado: u.estado === "activo" ? "suspendido" : "activo" } : u
-    ))
-  }, [])
-  const guardarUsuario = useCallback((actualizado) => {
-    setUsuarios(us => us.map(u => u._id === actualizado._id ? actualizado : u))
-  }, [])
-  const cerrarModal    = useCallback(() => setUsuarioEditando(null), [])
+
+
+  const cerrarModal = useCallback(() => setUsuarioEditando(null), [])
 
   // Stats derivadas del estado real
   const stats = useMemo(() => [
-    { label: "Total",           valor: usuarios.length,                                        color: "text-slate-700"  },
-    { label: "Superadmins",     valor: usuarios.filter(u => u.rol === "superadmin").length,    color: "text-purple-600" },
-    { label: "Admins",          valor: usuarios.filter(u => u.rol === "admin").length,          color: "text-[#1c16cd]"  },
-    { label: "Usuarios",        valor: usuarios.filter(u => u.rol === "usuario").length,        color: "text-slate-500"  },
-    { label: "Activos",         valor: usuarios.filter(u => u.estado === "activo").length,      color: "text-[#0a8a1a]"  },
-    { label: "Inactivos",       valor: usuarios.filter(u => u.estado !== "activo").length,      color: "text-[#d32f2f]"  },
+    { label: "Total", valor: usuarios.length, color: "text-slate-700" },
+    { label: "Superadmins", valor: usuarios.filter(u => u.rol === "superadmin").length, color: "text-purple-600" },
+    { label: "Admins", valor: usuarios.filter(u => u.rol === "admin").length, color: "text-[#1c16cd]" },
+    { label: "Usuarios", valor: usuarios.filter(u => u.rol === "usuario").length, color: "text-slate-500" },
+    { label: "Activos", valor: usuarios.filter(u => u.estado === "activo").length, color: "text-[#0a8a1a]" },
+    { label: "Inactivos", valor: usuarios.filter(u => u.estado !== "activo").length, color: "text-[#d32f2f]" },
   ], [usuarios])
 
   // Filtrado + ordenamiento
   const usuariosFiltrados = useMemo(() => {
     const q = query.toLowerCase()
     let resultado = usuarios.filter(u => {
-      const matchQ = u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
-      const matchR = filtroRol    === "todos" || u.rol    === filtroRol
+      const matchQ = u.nombreCompleto.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      const matchR = filtroRol === "todos" || u.rol === filtroRol
       const matchE = filtroEstado === "todos" || u.estado === filtroEstado
       return matchQ && matchR && matchE
     })
 
     resultado.sort((a, b) => {
       let cmp = 0
-      if (sortBy === "nombre") cmp = a.nombre.localeCompare(b.nombre, "es")
-      if (sortBy === "fecha")  cmp = new Date(a.fechaRegistro) - new Date(b.fechaRegistro)
+      if (sortBy === "nombre") cmp = a.nombreCompleto.localeCompare(b.nombreCompleto, "es")
+      if (sortBy === "fecha") cmp = new Date(a.fechaRegistro) - new Date(b.fechaRegistro)
       return sortDir === "asc" ? cmp : -cmp
     })
 
@@ -250,11 +255,11 @@ const Usuarios = () => {
   }, [usuarios, query, filtroRol, filtroEstado, sortBy, sortDir])
 
   // Paginación
-  const totalPaginas  = Math.max(1, Math.ceil(usuariosFiltrados.length / PER_PAGE))
-  const paginaActual  = Math.min(pagina, totalPaginas)
-  const paginados     = usuariosFiltrados.slice((paginaActual - 1) * PER_PAGE, paginaActual * PER_PAGE)
-  const desde         = usuariosFiltrados.length === 0 ? 0 : (paginaActual - 1) * PER_PAGE + 1
-  const hasta         = Math.min(paginaActual * PER_PAGE, usuariosFiltrados.length)
+  const totalPaginas = Math.max(1, Math.ceil(usuariosFiltrados.length / PER_PAGE))
+  const paginaActual = Math.min(pagina, totalPaginas)
+  const paginados = usuariosFiltrados.slice((paginaActual - 1) * PER_PAGE, paginaActual * PER_PAGE)
+  const desde = usuariosFiltrados.length === 0 ? 0 : (paginaActual - 1) * PER_PAGE + 1
+  const hasta = Math.min(paginaActual * PER_PAGE, usuariosFiltrados.length)
 
   const irPagina = (n) => setPagina(Math.max(1, Math.min(n, totalPaginas)))
 
@@ -396,12 +401,12 @@ const Usuarios = () => {
                   onClick={() => { setFiltroEstado(value); setPagina(1) }}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border-2 transition-all
                     ${filtroEstado === value
-                      ? value === "activo"     ? "bg-[#13da28]/90 text-white border-[#13da28]/90"
-                      : value === "suspendido" ? "bg-[#d32f2f] text-white border-[#d32f2f]"
-                      :                          "bg-[#1c16cd] text-white border-[#1c16cd]"
+                      ? value === "activo" ? "bg-[#13da28]/90 text-white border-[#13da28]/90"
+                        : value === "suspendido" ? "bg-[#d32f2f] text-white border-[#d32f2f]"
+                          : "bg-[#1c16cd] text-white border-[#1c16cd]"
                       : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"}`}
                 >
-                  {value === "activo"     && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                  {value === "activo" && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
                   {value === "suspendido" && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
                   {label}
                 </button>
@@ -448,9 +453,10 @@ const Usuarios = () => {
               ) : (
                 paginados.map(usuario => {
                   const esSuperadmin = usuario.rol === "superadmin"
-                  const esAdmin      = usuario.rol === "admin" || esSuperadmin
-                  const esActivo     = usuario.estado === "activo"
-                  const badge        = rolBadge[usuario.rol] ?? rolBadge.usuario
+                  const puedeModificar = rolActual === 'superadmin' || usuario.rol === 'usuario'
+                  const esAdmin = usuario.rol === "admin" || esSuperadmin
+                  const esActivo = usuario.estado === "activo"
+                  const badge = rolBadge[usuario.rol] ?? rolBadge.usuario
 
                   return (
                     <tr
@@ -464,7 +470,7 @@ const Usuarios = () => {
                             {usuario.iniciales}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-slate-800 text-sm leading-tight truncate">{usuario.nombre}</p>
+                            <p className="font-semibold text-slate-800 text-sm leading-tight truncate">{usuario.nombreCompleto}</p>
                             <p className="text-xs text-slate-400 truncate">{usuario.email}</p>
                           </div>
                         </div>
@@ -496,16 +502,16 @@ const Usuarios = () => {
                       <td className="px-6 py-3.5">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => setUsuarioEditando(usuario)}
+                            onClick={() => puedeModificar && setUsuarioEditando(usuario)}
                             title="Editar usuario"
-                            className="w-8 h-8 flex items-center justify-center rounded-xl border-2 border-slate-200 text-slate-400 hover:border-[#1c16cd] hover:text-[#1c16cd] transition-colors"
+                            className={`w-8 h-8 flex items-center justify-center rounded-xl border-2 border-slate-200 text-slate-400 hover:border-[#1c16cd] hover:text-[#1c16cd] transition-colors ${!puedeModificar ? 'opacity-30 cursor-not-allowed' : ''}`}
                           >
                             <Icon name="edit" size={15} />
                           </button>
 
-                          {!esSuperadmin ? (
+                          {!esSuperadmin && puedeModificar ? (
                             <button
-                              onClick={() => toggleEstado(usuario._id)}
+                              onClick={() => onToggleEstado(usuario._id)}
                               title={esActivo ? "Suspender usuario" : "Activar usuario"}
                               className={`w-8 h-8 flex items-center justify-center rounded-xl border-2 transition-all
                                 ${esActivo
@@ -585,7 +591,7 @@ const Usuarios = () => {
         <UsuarioModal
           usuario={usuarioEditando}
           onClose={cerrarModal}
-          onGuardar={guardarUsuario}
+          onGuardar={onGuardar}
         />
       )}
     </div>

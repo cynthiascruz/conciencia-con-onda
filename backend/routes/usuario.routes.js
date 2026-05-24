@@ -1,7 +1,7 @@
 // Este archivo maneja las rutas relacionadas con los usuarios
 
 import { Router } from 'express';
-import { listarUsuarios, cambiarRol, cambiarEstado, actualizarPerfil } from '../controllers/usuarioController.js';
+import { listarUsuarios, cambiarRol, cambiarEstado, actualizarPerfil, actualizarDatosUsuario } from '../controllers/usuarioController.js';
 import { protegerRuta, soloAdmin } from '../middlewares/authMiddleware.js';
 
 const router = Router();
@@ -11,5 +11,6 @@ router.get ('/', protegerRuta, soloAdmin, listarUsuarios);
 router.patch('/:id/rol', protegerRuta, soloAdmin, cambiarRol);
 router.patch('/:id/estado', protegerRuta, soloAdmin, cambiarEstado);
 router.put('/perfil', protegerRuta, actualizarPerfil);
+router.patch('/:id/datos', protegerRuta, soloAdmin, actualizarDatosUsuario);
 
 export default router;

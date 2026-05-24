@@ -26,7 +26,7 @@ export const protegerRuta = (req, res, next) => {
 // Verificar rol
 
 export const soloAdmin = (req, res, next) => {
-    if (req.usuario.rol !== 'Admin') {
+    if (req.usuario.rol !== 'Admin' && req.usuario.rol !== 'Superadmin') {
         logger.warn('Acceso denegado. Solo administradores', { 
             method: req.method, 
             url: req.originalUrl, 

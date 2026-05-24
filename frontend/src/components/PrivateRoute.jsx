@@ -18,8 +18,9 @@ const PrivateRoute = ({ rol }) => {
   // Sin sesión → redirige al login
   if (!usuario) return <Navigate to="/login" replace />
 
-  // Con sesión pero sin el rol requerido → redirige al inicio
-  if (rol && usuario.rol !== rol) return <Navigate to="/" replace />
+  // después — Superadmin tiene acceso a todo lo que Admin tiene
+  const puedeAcceder = !rol || usuario.rol === rol || (rol === 'Admin' && usuario.rol === 'Superadmin')
+  if (!puedeAcceder) return <Navigate to="/" replace />
 
   // Todo ok → renderiza la ruta hija
   return <Outlet />

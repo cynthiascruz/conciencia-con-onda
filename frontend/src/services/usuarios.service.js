@@ -28,4 +28,11 @@ export const usuariosService = {
       method: 'PUT',
       body: JSON.stringify(datos),
     }),
+
+  // Solo Admin — actualizar datos de un usuario
+  actualizarDatos: (id, datos) =>
+  api(`/api/usuarios/${id}/datos`, {
+    method: 'PATCH',
+    body: JSON.stringify(datos),
+  }),
 }

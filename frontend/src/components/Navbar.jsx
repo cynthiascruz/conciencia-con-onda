@@ -133,7 +133,7 @@ const Navbar = () => {
                   </div>
 
                   {/* Panel admin — solo para admins */}
-                  {(usuario.rol === "Admin" || usuario.rol === "superadmin") && (
+                  {(usuario.rol === "Admin" || usuario.rol === "Superadmin") && (
                     <div className="border-t border-slate-100 py-1.5">
                       <button
                         onClick={() => { setOpen(false); navigate("/admin") }}

@@ -50,10 +50,14 @@ export const cambiarRol = async (req, res, next) => {
             return res.status(403).json({ mensaje: 'Este usuario no se puede modificar' });
         }
 
+        if (req.usuario.rol === 'Admin' && usuario.rol !== 'Usuario') {
+            return res.status(403).json({ mensaje: 'No tienes permiso para modificar este usuario.' });
+        }
+
         usuario.rol = rol;
         await usuario.save();
 
-        logger.info('RRol de usuario ${usuario.email} cambiado a ${rol}', {
+        logger.info(`Rol de usuario ${usuario.email} cambiado a ${rol}`, {
             method: req.method, url: req.originalUrl, statusCode: 200,
         });
 
@@ -87,6 +91,10 @@ export const cambiarEstado = async (req, res, next) => {
 
         if (usuario.estado === 'Protegido') {
             return res.status(403).json({ mensaje: 'Este usuario no puede ser modificado.' });
+        }
+
+        if (req.usuario.rol === 'Admin' && usuario.rol !== 'Usuario') {
+            return res.status(403).json({ mensaje: 'No tienes permiso para modificar este usuario.' });
         }
 
         usuario.estado = estado;
@@ -146,6 +154,48 @@ export const actualizarPerfil = async (req, res, next) => {
             usuario: usuarioActualizado,
         });
 
+    } catch (error) {
+        next(error);
+    }
+};
+
+/*
+    Actualizar datos de un usuario — solo Admin/Superadmin
+    Método: PATCH
+    Ruta: /api/usuarios/:id/datos
+*/
+export const actualizarDatosUsuario = async (req, res, next) => {
+    try {
+        const { nombre, apellido, password } = req.body;
+
+        const usuario = await Usuario.findById(req.params.id);
+        if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+
+        if (usuario.estado === 'Protegido') {
+            return res.status(403).json({ mensaje: 'Este usuario no puede ser modificado.' });
+        }
+
+        if (req.usuario.rol === 'Admin' && usuario.rol !== 'Usuario') {
+            return res.status(403).json({ mensaje: 'No tienes permiso para modificar este usuario.' });
+        }
+
+        if (nombre)   usuario.nombre   = nombre;
+        if (apellido) usuario.apellido = apellido;
+
+        if (password) {
+            const salt     = await bcryptjs.genSalt(10);
+            usuario.password = await bcryptjs.hash(password, salt);
+        }
+
+        await usuario.save();
+
+        const actualizado = await Usuario.findById(usuario._id).select('-password');
+
+        logger.info(`Datos de usuario ${usuario.email} actualizados`, {
+            method: req.method, url: req.originalUrl, statusCode: 200,
+        });
+
+        return res.status(200).json({ mensaje: 'Usuario actualizado.', usuario: actualizado });
     } catch (error) {
         next(error);
     }
