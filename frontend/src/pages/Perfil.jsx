@@ -14,8 +14,8 @@ const getNombreCompleto = (u) =>
 
 const rolConfig = {
   Admin: { label: "Administrador", icon: "manage_accounts" },
-  superadmin: { label: "Superadmin", icon: "admin_panel_settings" },
-  usuario: { label: "Usuario", icon: "person" },
+  Superadmin: { label: "Superadmin", icon: "admin_panel_settings" },
+  Usuario: { label: "Usuario", icon: "person" },
 }
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ const Perfil = () => {
     return null
   }
 
-  const rol = rolConfig[usuario.rol] ?? rolConfig.usuario
+  const rol = rolConfig[usuario.rol] ?? rolConfig.Usuario
   const fechaStr = formatFecha(usuario.fechaRegistro)
 
   const [editando, setEditando] = useState(false)
@@ -182,22 +182,8 @@ const Perfil = () => {
       <div className="max-w-3xl mx-auto px-6 md:px-0 -mt-6 pb-10 flex flex-col gap-5">
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 max-w-xs ">
           {[
-            {
-              label: "Lugares propuestos",
-              valor: usuario.lugaresPublicados ?? 0,
-              icon: "location_on",
-              iconBg: "bg-[#1c16cd]/10",
-              iconColor: "text-[#1c16cd]",
-            },
-            {
-              label: "Reseñas escritas",
-              valor: usuario.reseñas ?? 0,
-              icon: "rate_review",
-              iconBg: "bg-[#ff8c2a]/10",
-              iconColor: "text-[#ff8c2a]",
-            },
             {
               label: "Rol de cuenta",
               valor: rol.label,
