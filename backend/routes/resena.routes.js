@@ -6,11 +6,15 @@ import {
     listarTodasResenas,
     crearResena,
     cambiarEstadoResena,
+    contarResenas,
     //misResenas,
 } from '../controllers/resenaController.js';
 import { protegerRuta, soloAdmin } from '../middlewares/authMiddleware.js';
 
 const router = Router();
+
+// Contar reseñas por lugar
+router.get('/conteos', contarResenas);
 
 // Publico - solo reseñas de un lugar
 router.get('/:lugarId', listarResenas);

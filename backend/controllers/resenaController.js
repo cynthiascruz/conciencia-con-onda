@@ -235,6 +235,36 @@ export const listarTodasResenas = async (req, res, next) => {
     }
 };
 
+
+/*
+    Conteo de reseñas publicadas por lugar — público
+    Método: GET
+    Ruta: /api/resenas/conteos
+*/
+export const contarResenas = async (req, res, next) => {
+    try {
+        const conteos = await Resena.aggregate([
+            { $match: { estado: 'Publicada' } },
+            { $group: {
+                _id:   { lugar: '$id_lugar', tipo: '$tipo' },
+                total: { $sum: 1 }
+            }},
+        ])
+
+        const resultado = {}
+        conteos.forEach(({ _id, total }) => {
+            const id = String(_id.lugar)
+            if (!resultado[id]) resultado[id] = { positivas: 0, negativas: 0 }
+            if (_id.tipo === 'Positiva') resultado[id].positivas = total
+            if (_id.tipo === 'Negativa') resultado[id].negativas = total
+        })
+
+        return res.status(200).json(resultado)
+    } catch (error) {
+        next(error)
+    }
+}
+
 /*    
     Listar resenas del usuario autenticado
     Metodo: GET

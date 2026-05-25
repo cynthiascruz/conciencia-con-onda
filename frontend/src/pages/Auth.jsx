@@ -151,14 +151,14 @@ const Auth = ({ mode: initialMode = "login" }) => {
                   <Field label="Nombre">
                     <div className={inputBase}>
                       <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>person</span>
-                      <input type="text" placeholder="Tu nombre" className={inputText}
+                      <input type="text" placeholder="Tu nombre" autoComplete="given-name" className={inputText}
                         value={nombre} onChange={e => setNombre(e.target.value)} />
                     </div>
                   </Field>
                   <Field label="Apellido">
                     <div className={inputBase}>
                       <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>person</span>
-                      <input type="text" placeholder="Tu apellido" className={inputText}
+                      <input type="text" placeholder="Tu apellido" autoComplete="family-name" className={inputText}
                         value={apellido} onChange={e => setApellido(e.target.value)} />
                     </div>
                   </Field>
@@ -169,7 +169,7 @@ const Auth = ({ mode: initialMode = "login" }) => {
               <Field label="Correo electrónico">
                 <div className={inputBase}>
                   <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>mail</span>
-                  <input type="email" placeholder="tu@email.com" className={inputText} value={email} onChange={e => setEmail(e.target.value)} />
+                  <input type="email" placeholder="tu@email.com" autoComplete="email" className={inputText} value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
               </Field>
 
@@ -178,6 +178,7 @@ const Auth = ({ mode: initialMode = "login" }) => {
                 <div className={inputBase}>
                   <span className="material-symbols-rounded text-slate-400 shrink-0" style={{ fontSize: "18px" }}>lock</span>
                   <input
+                    autoComplete={isLogin ? "current-password" : "new-password"}
                     type={showPassword ? "text" : "password"}
                     placeholder={isLogin ? "Contraseña" : "Crea una contraseña segura"}
                     className={inputText}

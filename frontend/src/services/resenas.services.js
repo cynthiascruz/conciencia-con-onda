@@ -28,4 +28,8 @@ export const resenasService = {
       method: 'PATCH',
       body: JSON.stringify({ estado }),
     }),
+
+    // Contar reseñas por lugar
+    conteos: () =>
+    api('/api/resenas/conteos'),
 }

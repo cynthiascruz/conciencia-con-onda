@@ -8,6 +8,7 @@ import AddLugarModal from "../components/AddLugarModal"
 import { useAuth } from "../context/AuthContext"
 import { lugaresService, adaptarLugar } from "../services/lugares.service"
 import { categoriasService } from "../services/categorias.service"
+import { resenasService } from '../services/resenas.services'
 
 
 const Lugares = () => {
@@ -16,37 +17,42 @@ const Lugares = () => {
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "")
 
   // Sync con param ?q= si cambia por navegación
-useEffect(() => {
-  const cargar = async () => {
-    try {
-      setCargando(true)
-      const [lugaresRaw, categoriasRaw] = await Promise.all([
-        lugaresService.listar(),
-        categoriasService.listar(),
-      ])
-      setLugares(lugaresRaw.map(adaptarLugar))
-      setCategorias(categoriasRaw)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setCargando(false)
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        setCargando(true)
+        const [lugaresRaw, categoriasRaw, conteos] = await Promise.all([
+          lugaresService.listar(),
+          categoriasService.listar(),
+          resenasService.conteos(),
+        ])
+        setLugares(lugaresRaw.map(l => {
+          const adaptado = adaptarLugar(l)
+          const c = conteos[l._id] ?? { positivas: 0, negativas: 0 }
+          return { ...adaptado, reseñasCount: c }
+        }))
+        setCategorias(categoriasRaw)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setCargando(false)
+      }
     }
-  }
-  cargar()
-}, [])
+    cargar()
+  }, [])
 
-  const [lugares,    setLugares]    = useState([])
+  const [lugares, setLugares] = useState([])
   const [categorias, setCategorias] = useState([])
-  const [cargando,   setCargando]   = useState(true)
-  const [error,      setError]      = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState(null)
 
 
   const [lugarSeleccionado, setLugarSeleccionado] = useState(null)
   const [mostrarAddModal, setMostrarAddModal] = useState(false)
- // const [reseñas, setReseñas] = useState(reseñasIniciales)
+  // const [reseñas, setReseñas] = useState(reseñasIniciales)
   const [filtros, setFiltros] = useState({
-    categoria:       null,
-    accesibilidad:   [],
+    categoria: null,
+    accesibilidad: [],
     soloVerificados: false,
   })
 
@@ -75,8 +81,8 @@ useEffect(() => {
   })
 
   // Handlers
-  const handleCategoria     = (cat) => setFiltros(f => ({ ...f, categoria: cat }))
-  const handleVerificado    = (val) => setFiltros(f => ({ ...f, soloVerificados: val }))
+  const handleCategoria = (cat) => setFiltros(f => ({ ...f, categoria: cat }))
+  const handleVerificado = (val) => setFiltros(f => ({ ...f, soloVerificados: val }))
   const handleAccesibilidad = (opcion) => {
     setFiltros(f => ({
       ...f,
@@ -121,7 +127,7 @@ useEffect(() => {
 
         <Sidebar
           filtros={filtros}
-          categorias ={categorias}
+          categorias={categorias}
           onCategoriaChange={handleCategoria}
           onAccesibilidadChange={handleAccesibilidad}
           onVerificadoChange={handleVerificado}
@@ -142,7 +148,7 @@ useEffect(() => {
               </button>
             )}
           </div>
-{cargando && (
+          {cargando && (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <span className="material-symbols-rounded text-[#1c16cd] animate-spin" style={{ fontSize: "40px" }}>
                 progress_activity
@@ -192,7 +198,7 @@ useEffect(() => {
           lugar={lugarSeleccionado}
           onClose={() => setLugarSeleccionado(null)}
           reseñasData={[]}
-          onNuevaReseña={() => {}}
+          onNuevaReseña={() => { }}
         />
       )}
 

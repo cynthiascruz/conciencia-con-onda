@@ -93,8 +93,22 @@ const Admin = () => {
           lugaresService.listarAdmin(),
           resenasService.listarTodasResenas(),
         ])
+
+        // Calcula conteos desde las reseñas ya obtenidas
+        const conteosMap = {}
+        ress.forEach(r => {
+          if (r.estado !== 'Publicada') return
+          const id = String(r.id_lugar?._id ?? r.id_lugar)
+          if (!conteosMap[id]) conteosMap[id] = { positivas: 0, negativas: 0 }
+          if (r.tipo === 'Positiva') conteosMap[id].positivas++
+          if (r.tipo === 'Negativa') conteosMap[id].negativas++
+        })
+
         setUsuarios(usrs.map(adaptarUsuario))
-        setLugares(lugs.map(adaptarLugarAdmin))
+        setLugares(lugs.map(l => {
+          const adaptado = adaptarLugarAdmin(l)
+          return { ...adaptado, reseñasCount: conteosMap[String(l._id)] ?? { positivas: 0, negativas: 0 } }
+        }))
         setResenas(ress.map(adaptarResenaAdmin))
       } catch (err) {
         console.error('Error cargando datos del admin:', err.message)
