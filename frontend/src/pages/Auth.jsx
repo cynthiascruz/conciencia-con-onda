@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react"
 import logo from "../assets/logotipo.svg"
 import imgbg from "../assets/imgbg.jpg"
 import { useAuth } from "../context/AuthContext"
+import { authService } from "../services/auth.service"
 
 /* Input */
 const Field = ({ label, children, right }) => (
@@ -37,8 +38,8 @@ const Toast = ({ mensaje, tipo }) => {
 }
 
 const Auth = ({ mode: initialMode = "login" }) => {
-  const navigate    = useNavigate()
-  const { login }   = useAuth()
+  const navigate = useNavigate()
+  const { login } = useAuth()
   const [mode, setMode] = useState(initialMode)
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
@@ -71,32 +72,21 @@ const Auth = ({ mode: initialMode = "login" }) => {
     setLoading(true)
     try {
       if (isLogin) {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email, password }),
-        })
-        const data = await res.json()
-        if (!res.ok) return mostrarToast(data.mensaje, 'error')
+        const data = await authService.login(email, password)
         mostrarToast(`Bienvenido, ${data.usuario.nombre} 👋`)
         login(data.usuario)
         setTimeout(() => {
-          data.usuario.rol === 'Admin' ? navigate('/admin') : navigate('/')
+          data.usuario.rol === 'Admin' || data.usuario.rol === 'Superadmin'
+            ? navigate('/admin')
+            : navigate('/')
         }, 1000)
       } else {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/registro`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre, apellido, email, password }),
-        })
-        const data = await res.json()
-        if (!res.ok) return mostrarToast(data.mensaje, 'error')
+        await authService.registro(nombre, apellido, email, password)
         mostrarToast('Cuenta creada correctamente. Inicia sesión 🎉')
         setTimeout(() => switchMode('login'), 1500)
       }
     } catch (error) {
-      mostrarToast('No se pudo conectar con el servidor.', 'error')
+      mostrarToast(error.message ?? 'No se pudo conectar con el servidor.', 'error')
     } finally {
       setLoading(false)
     }

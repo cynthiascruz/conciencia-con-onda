@@ -2,6 +2,7 @@ import { useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
+import { usuariosService } from "../services/usuarios.service"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const formatFecha = (iso) => {
@@ -108,26 +109,13 @@ const Perfil = () => {
         body.password = form.password
         body.passwordActual = form.passwordActual
       }
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/perfil`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) {
-        const data = await res.json()
-        return showToast(data.mensaje ?? "Error al actualizar", false)
-      }
-      actualizarPerfil({ nombre: form.nombre, apellido: form.apellido, email: form.email })
+      await usuariosService.actualizarPerfil(body)
+      actualizarPerfil({ nombre: form.nombre, apellido: form.apellido })
       setForm(f => ({ ...f, password: "", passwordConf: "", passwordActual: "" }))
       setEditando(false)
       showToast("Perfil actualizado correctamente")
-    } catch {
-      actualizarPerfil({ nombre: form.nombre, apellido: form.apellido, email: form.email })
-      setForm(f => ({ ...f, password: "", passwordConf: "", passwordActual: "" }))
-      setEditando(false)
-      showToast("Perfil actualizado")
+    } catch (error) {
+      showToast(error.message ?? "Error al actualizar", false)
     } finally {
       setLoading(false)
     }
@@ -235,7 +223,7 @@ const Perfil = () => {
                 </div>
 
                 {/* Email */}
-                <Field  className= "opacity-100" label="Correo electrónico" icon="mail">
+                <Field className="opacity-100" label="Correo electrónico" icon="mail">
                   <input type="email" value={form.email} disabled className={`${inputText} cursor-not-allowed text-slate-500 bg-slate-50 opacity-50`} />
                 </Field>
                 {/* Contraseña actual — solo aparece si se quiere cambiar la contraseña */}
