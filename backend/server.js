@@ -17,11 +17,24 @@ connectDB();
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL
+].filter(Boolean); // Agrega aquí otros orígenes permitidos
+
 // Middlewares globales
 app.use(cors({
-    origin: 'http://localhost:5173',  //Cambiar por el URL del frontend (DevTunnels o hosteado) 
+    origin: (origin, callback) => {
+      if(!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('No permitido por CORS'));
+      }
+    },
     credentials: true,
 }));
+
+
 app.use(express.json())
 app.use(cookieParser())
 
